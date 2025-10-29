@@ -1,3 +1,10 @@
+/*
+ * Author: Armando Vega
+ * Created: 28 October 2025
+ * Date Last Modified: 28 October 2025
+ * Last Modified By: Armando Vega
+ * Summary: User Model POJO Class
+ */
 package com.c11.umastagram.model;
 
 import jakarta.persistence.*;
