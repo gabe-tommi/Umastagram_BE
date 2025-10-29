@@ -1,3 +1,10 @@
+/*
+ * Author: Armando Vega
+ * Created: 29 October 2025
+ * Date Last Modified: 29 October 2025
+ * Last Modified By: Armando Vega
+ * Summary: User Model POJO Class Unit Test
+ */
 package com.c11.umastagram.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
