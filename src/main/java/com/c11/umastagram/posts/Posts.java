@@ -22,7 +22,7 @@ public class Posts {
     @Column(name = "date_posted", nullable = false)
     private LocalDateTime datePosted;
 
-    @Column(name = "likes", nullable = false)
+    @Column(name = "likes", nullable = false, columnDefinition = "INT DEFAULT 0")
     private int likes;
 
     public Posts() {}
