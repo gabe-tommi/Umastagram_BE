@@ -1,6 +1,6 @@
 /*
 Author: Joceline Cortez-Arellano
-Date: October 29, 2025
+Date Last Modified: 29 October 2025
 Summary: Contains the horse table and getters/setters for all information
 */
 package com.c11.umastagram.model;
