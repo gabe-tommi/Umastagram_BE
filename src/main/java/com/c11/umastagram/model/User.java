@@ -32,7 +32,11 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
-    public User(){}
+    public User(){
+        this.username = "";
+        this.email = "";
+        this.password = "";
+    }
 
     public User(String githubId, String githubUsername, String username, String email, String password) {
         this.githubId = githubId;
