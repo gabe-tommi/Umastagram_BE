@@ -1,16 +1,16 @@
 /*
 Author: Joceline Cortez-Arellano
-Date: October 29, 2025
+Date last modified: October 29, 2025
 Summary: Contains the uma table and getters/setters for all information
 */
 
-package com.c11.umastagram.uma;
+package com.c11.umastagram.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "uma_table")
+@Table(name = "uma")
 public class Uma {
 
     @Id
