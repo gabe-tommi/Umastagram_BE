@@ -1,6 +1,6 @@
 /*
 Author: Joceline Cortez-Arellano
-Date last modified: October 29, 2025
+Date Last Modified: 29 October 2025
 Summary: Contains the uma table and getters/setters for all information
 */
 
