@@ -1,7 +1,7 @@
 /*
 Author: Joceline Cortez-Arellano
 Date Last Modified: 29 October 2025
-Summary: Contains the uma table and getters/setters for all information
+Summary: User Model POJO Class Unit Test
 */
 
 package com.c11.umastagram.model;
