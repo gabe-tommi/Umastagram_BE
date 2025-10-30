@@ -1,4 +1,9 @@
-package com.c11.umastagram.horse;
+/*
+Author: Joceline Cortez-Arellano
+Date: October 29, 2025
+Summary: Contains the horse table and getters/setters for all information
+*/
+package com.c11.umastagram.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
