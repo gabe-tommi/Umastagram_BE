@@ -9,13 +9,13 @@ package com.c11.umastagram.controller;
 
 import com.c11.umastagram.posts.Posts;
 import com.c11.umastagram.posts.PostsRepository;
-import com.c11.umastagram.posts.CreatePostRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -27,25 +27,25 @@ public class PostsController {
     /**
      * Create a new post
      * POST /api/posts
+     * Request body: { "userId": "user123", "text": "post content", "image": "url" }
      */
     @PostMapping
-    public ResponseEntity<?> createPost(@RequestBody CreatePostRequest request) {
+    public ResponseEntity<?> createPost(@RequestBody Map<String, String> request) {
         try {
             // Validate required fields
-            if (request.getUserId() == null || request.getUserId().isEmpty()) {
+            String userId = request.get("userId");
+            String text = request.get("text");
+            String image = request.get("image");
+
+            if (userId == null || userId.isEmpty()) {
                 return ResponseEntity.badRequest().body("userId is required");
             }
-            if (request.getText() == null || request.getText().isEmpty()) {
+            if (text == null || text.isEmpty()) {
                 return ResponseEntity.badRequest().body("text is required");
             }
 
             // Create new post with provided data
-            Posts newPost = new Posts(
-                request.getUserId(),
-                request.getText(),
-                request.getImage(),
-                LocalDateTime.now()  // Automatically set current date/time
-            );
+            Posts newPost = new Posts(userId, text, image, LocalDateTime.now());
 
             // Save to database
             Posts savedPost = postsRepository.save(newPost);

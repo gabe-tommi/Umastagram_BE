@@ -12,6 +12,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.c11.umastagram.controller.PostsController;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
@@ -34,7 +36,7 @@ public class PostsControllerTest {
     private ObjectMapper objectMapper;
 
     private Posts testPost;
-    private CreatePostRequest createPostRequest;
+    private Map<String, String> createPostRequest;
 
     @BeforeEach
     public void setUp() {
@@ -46,11 +48,10 @@ public class PostsControllerTest {
         );
         testPost.setId(1L);
 
-        createPostRequest = new CreatePostRequest(
-            "user123",
-            "This is a test post",
-            "https://example.com/image.jpg"
-        );
+        createPostRequest = new HashMap<>();
+        createPostRequest.put("userId", "user123");
+        createPostRequest.put("text", "This is a test post");
+        createPostRequest.put("image", "https://example.com/image.jpg");
     }
 
     @Test
@@ -70,11 +71,10 @@ public class PostsControllerTest {
 
     @Test
     public void testCreatePostMissingUserId() throws Exception {
-        CreatePostRequest invalidRequest = new CreatePostRequest(
-            "",
-            "This is a test post",
-            "https://example.com/image.jpg"
-        );
+        Map<String, String> invalidRequest = new HashMap<>();
+        invalidRequest.put("userId", "");
+        invalidRequest.put("text", "This is a test post");
+        invalidRequest.put("image", "https://example.com/image.jpg");
 
         mockMvc.perform(post("/api/posts")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -86,11 +86,10 @@ public class PostsControllerTest {
 
     @Test
     public void testCreatePostMissingText() throws Exception {
-        CreatePostRequest invalidRequest = new CreatePostRequest(
-            "user123",
-            "",
-            "https://example.com/image.jpg"
-        );
+        Map<String, String> invalidRequest = new HashMap<>();
+        invalidRequest.put("userId", "user123");
+        invalidRequest.put("text", "");
+        invalidRequest.put("image", "https://example.com/image.jpg");
 
         mockMvc.perform(post("/api/posts")
                 .contentType(MediaType.APPLICATION_JSON)
