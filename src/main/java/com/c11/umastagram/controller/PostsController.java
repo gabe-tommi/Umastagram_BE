@@ -1,3 +1,10 @@
+/*
+Author: Alexangelo Orozco Gutierrez
+Date: October 29, 2025
+Summary: Contains the API functions for the Posts entity
+*/
+
+
 package com.c11.umastagram.controller;
 
 import com.c11.umastagram.posts.Posts;
@@ -107,8 +114,7 @@ public class PostsController {
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error deleting post: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

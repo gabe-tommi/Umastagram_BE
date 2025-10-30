@@ -1,3 +1,10 @@
+/*
+Author: Alexangelo Orozco Gutierrez
+Date: October 29, 2025
+Summary: Helps create a post object to then add to the database
+*/
+
+
 package com.c11.umastagram.posts;
 
 public class CreatePostRequest {

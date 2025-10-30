@@ -1,3 +1,9 @@
+/*
+Author: Alexangelo Orozco Gutierrez
+Date: October 29, 2025
+Summary: Contains the post table and getters/setters for all information
+*/
+
 package com.c11.umastagram.posts;
 
 import jakarta.persistence.*;
