@@ -10,7 +10,7 @@ package com.c11.umastagram.entities;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user")
+@Table(name = "uma_user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
