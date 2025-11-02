@@ -2,6 +2,9 @@ package com.c11.umastagram.posts;
 
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
+import com.c11.umastagram.entities.Posts;
+import com.c11.umastagram.entities.User;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 

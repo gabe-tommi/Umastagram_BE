@@ -7,6 +7,8 @@ package com.c11.umastagram.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import com.c11.umastagram.entities.Horse;
+
 
 import java.time.LocalDate;
 

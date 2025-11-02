@@ -7,7 +7,7 @@
  */
 package com.c11.umastagram.repository;
 
-import com.c11.umastagram.model.User;
+import com.c11.umastagram.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -8,6 +8,7 @@ package com.c11.umastagram.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import com.c11.umastagram.entities.Posts;
 import java.util.List;
 
 /**
