@@ -4,7 +4,7 @@ Date: October 29, 2025
 Summary: DAO for Posts entity
 */
 
-package com.c11.umastagram.posts;
+package com.c11.umastagram.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

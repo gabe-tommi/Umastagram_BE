@@ -3,7 +3,7 @@ Author: Joceline Cortez-Arellano
 Date Last Modified: 29 October 2025
 Summary: Contains the horse table and getters/setters for all information
 */
-package com.c11.umastagram.model;
+package com.c11.umastagram.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;

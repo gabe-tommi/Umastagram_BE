@@ -5,7 +5,7 @@ Summary: Helps create a post object to then add to the database
 */
 
 
-package com.c11.umastagram.posts;
+package com.c11.umastagram.entities;
 
 public class CreatePostRequest {
     private String userId;

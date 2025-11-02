@@ -5,7 +5,7 @@
  * Last Modified By: Armando Vega
  * Summary: User Model POJO Class
  */
-package com.c11.umastagram.model;
+package com.c11.umastagram.entities;
 
 import jakarta.persistence.*;
 

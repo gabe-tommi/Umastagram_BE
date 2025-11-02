@@ -4,7 +4,7 @@ Date: October 29, 2025
 Summary: Contains the post table and getters/setters for all information
 */
 
-package com.c11.umastagram.posts;
+package com.c11.umastagram.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

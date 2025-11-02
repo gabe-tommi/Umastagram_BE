@@ -4,7 +4,7 @@ Date Last Modified: 29 October 2025
 Summary: User Model POJO Class Unit Test
 */
 
-package com.c11.umastagram.model;
+package com.c11.umastagram.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
