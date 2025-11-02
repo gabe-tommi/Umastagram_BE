@@ -1,4 +1,4 @@
-package com.c11.umastagram.posts;
+package com.c11.umastagram.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,8 +12,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import com.c11.umastagram.controller.PostsController;
 import com.c11.umastagram.repository.PostsRepository;
-import com.c11.umastagram.entities.Posts;
-import com.c11.umastagram.entities.CreatePostRequest;
+import com.c11.umastagram.model.Posts;
+import com.c11.umastagram.model.CreatePostRequest;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;

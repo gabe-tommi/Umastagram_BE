@@ -1,9 +1,9 @@
-package com.c11.umastagram.posts;
+package com.c11.umastagram.repository;
 
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
-import com.c11.umastagram.entities.Posts;
-import com.c11.umastagram.entities.User;
+import com.c11.umastagram.model.Posts;
+import com.c11.umastagram.model.User;
 
 
 import static org.junit.jupiter.api.Assertions.*;
