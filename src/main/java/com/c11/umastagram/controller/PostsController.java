@@ -7,9 +7,9 @@ Summary: Contains the API functions for the Posts entity
 
 package com.c11.umastagram.controller;
 
-import com.c11.umastagram.posts.Posts;
-import com.c11.umastagram.posts.PostsRepository;
-import com.c11.umastagram.posts.CreatePostRequest;
+import com.c11.umastagram.entities.Posts
+import com.c11.umastagram.repository.PostsRepository  
+import com.c11.umastagram.entities.CreatePostRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
