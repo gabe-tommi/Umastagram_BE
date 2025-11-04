@@ -45,6 +45,7 @@ public class UserServiceTest {
             assertEquals("Email already exists", e.getMessage());
         }
         fetchedUser.setEmail("newemail@example.com"); // Reset email to test password duplication
+        fetchedUser.setPassword("");
         try {
             userService.saveUser(fetchedUser);
         } catch (IllegalArgumentException e) {
@@ -75,8 +76,24 @@ public class UserServiceTest {
         User newUser = userService.saveUser(fetchedUser);
         assertNotNull(newUser.getUserId());
         assertEquals("newusername", newUser.getUsername());
+    }
 
-        
+    @Test
+    public void testSaveGitHubUser(){
+        enum UserPath{
+            EMAIL_NOT_NULL,
+            USERNAME_NOT_NULL,
+            PASSWORD_NOT_NULL,
+            EMAIL_NOT_EMPTY,
+            
+        }
+
+        User user = new User("1010", "githubUser1010", "githubuser", "githubuser@example.com", "password123");
+        User savedUser = userService.saveUser(user);
+        assertNotNull(savedUser.getUserId());
+        assertEquals("githubUser1010", savedUser.getGithubUsername());
+
+
     }
     
 }
