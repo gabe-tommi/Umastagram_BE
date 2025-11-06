@@ -39,3 +39,13 @@ out/
 
 ### MAC ###
 .DS_Store
+
+### Gradle Dumb Files ###
+.gradle/8.14.3/executionHistory/executionHistory.bin
+.gradle/8.14.3/executionHistory/executionHistory.lock
+.gradle/8.14.3/fileHashes/fileHashes.bin
+.gradle/8.14.3/fileHashes/fileHashes.lock
+.gradle/8.14.3/fileHashes/resourceHashesCache.bin
+.gradle/buildOutputCleanup/buildOutputCleanup.lock
+.gradle/buildOutputCleanup/outputFiles.bin
+.gradle/file-system.probe
