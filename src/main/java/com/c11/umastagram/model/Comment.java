@@ -14,7 +14,7 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id")
+    @Column(name = "comment_id", unique = true)
     private int commentId;   // Primary Key
 
     @Column(name = "user_id", nullable = false)
@@ -26,13 +26,24 @@ public class Comment {
     @Column(name = "comment_text", nullable = false, length = 500)
     private String commentText;  // Actual comment content
 
+    // Constructor
+    public Comment(String commentText, int userId, int postId) {
+        this.commentText = commentText;
+        this.userId = userId;
+        this.postId = postId;
+    }
+
+    // Default constructor
+    public Comment() {
+    }
+
     // --- Getters and Setters ---
     public int getCommentId() {
         return commentId;
     }
 
     public void setCommentId(int commentId) {
-        this.commentId = commentId;
+        this.commentId = commentId; 
     }
 
     public int getUserId() {
