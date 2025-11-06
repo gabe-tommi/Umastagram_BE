@@ -105,11 +105,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * JPQL: DELETE FROM User u WHERE u.userId = :userId
      *
      * @param userId the ID of the user to delete
+     * @return number of rows affected
      */
     @Modifying
     @Transactional
     @Query("DELETE FROM User u WHERE u.userId = :userId")
-    void deleteUserByUserId(@Param("userId") Long userId);
+    int deleteUserByUserId(@Param("userId") Long userId);
 
     /**
      * Retrieves a user by their GitHub ID.
@@ -186,5 +187,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("UPDATE User u SET u.password = :password WHERE u.userId = :userId")
     void setPasswordByUserId(@Param("password") String password, @Param("userId") Long userId);
 
-
+    /**
+     * Retrieves a user by their username.
+     * JPQL: SELECT u FROM User u WHERE u.username = :username
+     *
+     * @param username the username of the user to retrieve
+     * @return Optional<User> containing the user if found, or empty otherwise
+     */
+    @Query("SELECT u FROM User u WHERE u.username = :username")
+    Optional<User> getUserByUsername(@Param("username") String username);
 }

@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -27,6 +28,11 @@ public class UserRepositoryTest {
     
     @Autowired
     private UserRepository userRepository;
+
+    @AfterEach
+    public void tearDown() {
+        userRepository.deleteAll();
+    }
 
     @Test
     public void testInsertUser() {
@@ -218,5 +224,18 @@ public class UserRepositoryTest {
         Optional<String> passwordOpt = userRepository.getPasswordByUserId(userId);
         assertFalse(passwordOpt.isEmpty());
         assertEquals("newSecurePassword!", passwordOpt.get());
+    }
+
+    @Test
+    public void testGetUserByUsername() {
+        User user = new User(null, null, "uniqueUsername", "unique@example.com", "password123");
+        User savedUser = userRepository.save(user);
+        String username = savedUser.getUsername();
+
+        Optional<User> userOpt = userRepository.getUserByUsername(username);
+        assertFalse(userOpt.isEmpty());
+        assertNotNull(userOpt);
+        assertEquals("uniqueUsername", userOpt.get().getUsername());
+        assertEquals("unique@example.com", userOpt.get().getEmail());
     }
 }
