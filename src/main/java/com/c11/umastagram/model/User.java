@@ -17,6 +17,15 @@ public class User {
     @Column(unique = true, nullable = false)
     private Long userId;
 
+    @Column(nullable = true, length = 255)
+    private String provider;
+
+    @Column(nullable = true, length = 255)
+    private String googleId;
+
+    @Column(nullable = true, length = 255)
+    private String googleUsername;
+
     @Column(unique = true, nullable = true, length = 255)
     private String githubId;
 
@@ -98,5 +107,29 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getProvider(String provider) {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public String getGoogleUsername() {
+        return googleUsername;
+    }
+
+    public void setGoogleUsername(String googleUsername) {
+        this.googleUsername = googleUsername;
     }
 }

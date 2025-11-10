@@ -37,6 +37,8 @@ public class UserService {
         String password = user.getPassword() == null ? null : user.getPassword().trim();
         String githubId = user.getGithubId() == null ? null : user.getGithubId().trim();
         String githubUsername = user.getGithubUsername() == null ? null : user.getGithubUsername().trim();
+        String googleId = user.getGoogleId() == null ? null : user.getGoogleId().trim();
+        String googleUsername = user.getGoogleUsername() == null ? null : user.getGoogleUsername().trim();
 
         // persist trimmed values back to user
         user.setEmail(email);
@@ -68,10 +70,22 @@ public class UserService {
         if (githubUsername != null && !githubUsername.isEmpty() && userRepository.getUserByGitHubUsername(githubUsername).isPresent()) {
             throw new IllegalArgumentException("GitHub Username already exists");
         }
+        if (googleId != null && !googleId.isEmpty() && userRepository.getUserByGoogleId(googleId).isPresent()) {
+            throw new IllegalArgumentException("Google ID already exists");
+        }
+        if (googleUsername != null && !googleUsername.isEmpty() && userRepository.getUserByGoogleUsername(githubUsername).isPresent()) {
+            throw new IllegalArgumentException("Google Username already exists");
+        }
 
         // Hash password if needed (use BCrypt)
         
         return userRepository.save(user);
+    }
+
+    public User createOrUpdateOAuthUser(String provider, Map<String, String> userInfo) {
+        String githubId = userInfo.hasKey("githubId") ? userInfo.get("githubId").trim() : null;
+        String githubUsername = userInfo.hasKey("githubUsername") ? userInfo.get("githubUsername").trim() : null;
+        return saveUser(user);
     }
 
     /**

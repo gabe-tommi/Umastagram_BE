@@ -9,14 +9,28 @@ import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.c11.umastagram.controller.oAuthModels.OAuth2State;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.Base64;
+import java.util.HashMap;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +74,18 @@ public class OAuthController {
 
     @Value("${spring.security.oauth2.client.registration.google-web.scope}")
     private String googleScope;
+
+    @Value("${spring.security.oauth2.client.registration.github-web.client-secret}")
+    private String githubClientSecret;
+
+    @Value("${spring.security.oauth2.client.registration.google-web.client-secret}")
+    private String googleClientSecret;
+
+    @Value("${spring.security.oauth2.client.registration.github-android.client-secret}")
+    private String githubAndroidClientSecret;
+
+    @Value("${spring.security.oauth2.client.registration.google-android.client-secret}")
+    private String googleAndroidClientSecret;
 
     // to randomly generate state parameter for OAuth2
     private String generateState() {
@@ -151,6 +177,167 @@ public class OAuthController {
         return new RedirectView(errorRedirectUrl);
     }
 
+    private Map<String, String> exchangeCodeForToken(String provider, String code, String redirectUri, String clientId, String clientSecret) {
+        // Determine token endpoint URL
+        String tokenUrl;
+        if ("github".equals(provider)) {
+            tokenUrl = "https://github.com/login/oauth/access_token";
+        } else if ("google".equals(provider)) {
+            tokenUrl = "https://oauth2.googleapis.com/token";
+        } else {
+            throw new IllegalArgumentException("Unsupported provider: " + provider);
+        }
+
+        // Set headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        // Prepare form data
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("grant_type", "authorization_code");
+        requestBody.add("code", code);
+        requestBody.add("redirect_uri", redirectUri);
+        requestBody.add("client_id", clientId);
+        requestBody.add("client_secret", clientSecret);
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // Make POST request
+        ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, requestEntity, String.class);
+        
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new RuntimeException("Token exchange failed: " + response.getStatusCode());
+        }
+
+        // Parse response based on provider
+        String responseBody = response.getBody();
+        Map<String, String> tokenData = "github".equals(provider) ? 
+        parseFormEncoded(responseBody) : 
+        parseJsonTokenResponse(responseBody);
+    
+        if (tokenData.containsKey("error")) {
+            String error = tokenData.get("error");
+            String description = tokenData.get("error_description");
+            throw new RuntimeException("OAuth2 error: " + error + " - " + description);
+        }
+         
+        return tokenData;
+    }
+
+    private Map<String, String> parseFormEncoded(String responseBody) {
+        Map<String, String> result = new HashMap<>();
+        
+        // Split by & to get key=value pairs
+        String[] pairs = responseBody.split("&");
+        
+        for (String pair : pairs) {
+            // Split each pair by = (but only once, in case value contains =)
+            String[] keyValue = pair.split("=", 2); // limit=2 prevents splitting values with =
+            
+            if (keyValue.length == 2) {
+                String key = keyValue[0];
+                String value = keyValue[1];
+                
+                // URL decode the value (GitHub URL-encodes some characters)
+                try {
+                    value = URLDecoder.decode(value, StandardCharsets.UTF_8);
+                } catch (Exception e) {
+                    // If decoding fails, use original value
+                }
+                
+                result.put(key, value);
+            }
+        }
+    
+        return result;
+    }
+
+    private Map<String, String> parseJsonTokenResponse(String responseBody) {
+        Map<String, String> result = new HashMap<>();
+        
+        try {
+            // Create ObjectMapper for JSON parsing
+            ObjectMapper objectMapper = new ObjectMapper();
+            
+            // Parse the entire JSON string into a JsonNode tree
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+            
+            // Extract required fields
+            if (rootNode.has("access_token")) {
+                result.put("access_token", rootNode.get("access_token").asText());
+            }
+            
+            if (rootNode.has("token_type")) {
+                result.put("token_type", rootNode.get("token_type").asText());
+            }
+            
+            if (rootNode.has("scope")) {
+                result.put("scope", rootNode.get("scope").asText());
+            }
+            
+            // Optional fields
+            if (rootNode.has("expires_in")) {
+                result.put("expires_in", String.valueOf(rootNode.get("expires_in").asInt()));
+            }
+            
+            if (rootNode.has("refresh_token")) {
+                result.put("refresh_token", rootNode.get("refresh_token").asText());
+            }
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse JSON token response: " + e.getMessage(), e);
+        }
+        
+        return result;
+    }
+
+    private Map<String, Object> fetchUserInfo(String provider, String accessToken) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String userInfoUrl;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        if ("github".equals(provider)) {
+            userInfoUrl = "https://api.github.com/user";
+            headers.set("User-Agent", "Umastagram");
+        } else if ("google".equals(provider)) {
+            userInfoUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
+        } else {
+            throw new IllegalArgumentException("Unsupported provider: " + provider);
+        }
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<String> response = restTemplate.exchange(userInfoUrl, HttpMethod.GET, entity, String.class);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new RuntimeException("Failed to fetch user info: " + response.getStatusCode());
+        }
+
+        JsonNode userJson; 
+        try{
+            userJson = objectMapper.readTree(response.getBody());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse user info response: " + e.getMessage(), e); 
+        }
+        Map<String, Object> userInfo = new HashMap<>();
+
+        if ("github".equals(provider)) {
+            userInfo.put("id", userJson.has("id") ? userJson.get("id").asText() : null);
+            userInfo.put("username", userJson.has("login") ? userJson.get("login").asText() : null);
+            userInfo.put("name", userJson.has("name") && !userJson.get("name").isNull() ? userJson.get("name").asText() : null);
+            userInfo.put("email", userJson.has("email") && !userJson.get("email").isNull() ? userJson.get("email").asText() : null);
+            userInfo.put("avatar_url", userJson.has("avatar_url") ? userJson.get("avatar_url").asText() : null);
+            
+        } else if ("google".equals(provider)) {
+            userInfo.put("id", userJson.has("id") ? userJson.get("id").asText() : null);
+            userInfo.put("username", userJson.has("email") ? userJson.get("email").asText() : null);
+            userInfo.put("name", userJson.has("name") && !userJson.get("name").isNull() ? userJson.get("name").asText() : null);
+            userInfo.put("email", userJson.has("email") ? userJson.get("email").asText() : null);
+            userInfo.put("avatar_url", userJson.has("picture") && !userJson.get("picture").isNull() ? userJson.get("picture").asText() : null);
+        }
+
+        return userInfo;
+    }
+
     @GetMapping("/{provider}/callback")
     public Object oauthCallback(@PathVariable String provider,
                                       String code,
@@ -175,12 +362,58 @@ public class OAuthController {
             return handleValidationError(e.getMessage(), session);
         }
 
+        Map<String, String> tokenResponse = null;
         // Token Exchange and User Info Retrieval
-        
-
+        try{
+            Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, stateData.getPlatform());
+            String redirectUri = redirectDetails.get("redirectUri");
+            String clientId = redirectDetails.get("clientId");
+            String clientSecret = redirectDetails.get("clientSecret");
+            tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret);
+        } catch (Exception e) {
+            return handleValidationError("Token exchange failed: " + e.getMessage(), session);
+        }
+        String accessToken = tokenResponse.get("access_token");
+        Map<String, Object> userInfo;
+        try {
+            userInfo = fetchUserInfo(provider, accessToken);
+        } catch (Exception e) {
+            return handleValidationError("Failed to fetch user info: " + e.getMessage(), session);
+        }
 
         // For brevity, the full implementation is omitted here.
         return new RedirectView("/"); // Placeholder
     }
 
+    private Map<String,String> getRedirectUriAndClientDetails(String provider, String platform) {
+        Map<String, String> details = new HashMap<>();
+        if (platform.equals("android")) {
+            if (provider.equals("github")) {
+                details.put("redirectUri", githubAndroidRedirectUri);
+                details.put("clientId", githubAndroidClientId);
+                details.put("clientSecret", githubAndroidClientSecret);
+            } else if (provider.equals("google")) {
+                details.put("redirectUri", googleAndroidRedirectUri);
+                details.put("clientId", googleAndroidClientId);
+                details.put("clientSecret", googleAndroidClientSecret);
+            } else {
+                throw new IllegalArgumentException("Unsupported provider: " + provider);
+            }
+        } else if (platform.equals("web")) {
+            if (provider.equals("github")) {
+                details.put("redirectUri", githubWebRedirectUri);
+                details.put("clientId", githubWebClientId);
+                details.put("clientSecret", githubClientSecret);
+            } else if (provider.equals("google")) {
+                details.put("redirectUri", googleWebRedirectUri);
+                details.put("clientId", googleWebClientId);
+                details.put("clientSecret", googleClientSecret);
+            } else {
+                throw new IllegalArgumentException("Unsupported provider: " + provider);
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported platform: " + platform);
+        }
+        return details;
+    }
 }
