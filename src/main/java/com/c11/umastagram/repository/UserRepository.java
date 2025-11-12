@@ -11,6 +11,8 @@ import com.c11.umastagram.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -69,6 +71,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<String> getEmailByUserId(@Param("userId") Long userId);
 
     /**
+     * Retrieves a user by their email.
+     * JPQL: SELECT u FROM User u WHERE u.email = :email
+     *
+     * @param email the email of the user to retrieve
+     * @return Optional<User> containing the user if found, or empty otherwise
+     */
+    @Query("SELECT u FROM User u WHERE u.email = :email")
+    Optional<User> getUserByEmail(@Param("email") String email);
+
+    /**
      * Retrieves the username of a user by their userId.
      * JPQL: SELECT u.username FROM User u WHERE u.userId = :userId
      *
@@ -88,5 +100,100 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u.password FROM User u WHERE u.userId = :userId")
     Optional<String> getPasswordByUserId(@Param("userId") Long userId);
 
+    /**
+     * Deletes a user by their userId.
+     * JPQL: DELETE FROM User u WHERE u.userId = :userId
+     *
+     * @param userId the ID of the user to delete
+     * @return number of rows affected
+     */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM User u WHERE u.userId = :userId")
+    int deleteUserByUserId(@Param("userId") Long userId);
 
+    /**
+     * Retrieves a user by their GitHub ID.
+     * JPQL: SELECT u FROM User u WHERE u.githubId = :githubId
+     *
+     * @param githubId the GitHub ID of the user to retrieve
+     * @return Optional<User> containing the user if found, or empty otherwise
+     */    
+    @Query("SELECT u FROM User u WHERE u.githubId = :githubId")
+    Optional<User> getUserByGitHubId(@Param("githubId") String githubId);
+
+    /**
+     * Retrieves a user by their GitHub username.
+     * JPQL: SELECT u FROM User u WHERE u.githubUsername = :githubUsername
+     *
+     * @param githubUsername the GitHub username of the user to retrieve
+     * @return Optional<User> containing the user if found, or empty otherwise
+     */
+    @Query("SELECT u FROM User u WHERE u.githubUsername = :githubUsername")
+    Optional<User> getUserByGitHubUsername(@Param("githubUsername") String githubUsername);
+
+    /**
+     * Sets the email of a user by their userId.
+     * JPQL: UPDATE User u SET u.email = :email WHERE u.userId = :userId
+     * @param email the new email to set
+     * @param userId the ID of the user
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.email = :email WHERE u.userId = :userId")
+    void setEmailByUserId(@Param("email") String email, @Param("userId") Long userId);
+
+    /**
+     * Sets the GitHub ID of a user by their userId.
+     * JPQL: UPDATE User u SET u.githubId = :githubId WHERE u.userId = :userId
+     * @param githubId the new GitHub ID to set
+     * @param userId the ID of the user
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.githubId = :githubId WHERE u.userId = :userId")
+    void setGitHubIdByUserId(@Param("githubId") String githubId, @Param("userId") Long userId);
+
+    /**
+     * Sets the GitHub username of a user by their userId.
+     * JPQL: UPDATE User u SET u.githubUsername = :githubUsername WHERE u.userId = :userId
+     * @param githubUsername the new GitHub username to set
+     * @param userId the ID of the user
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.githubUsername = :githubUsername WHERE u.userId = :userId")
+    void setGitHubUsernameByUserId(@Param("githubUsername") String githubUsername, @Param("userId") Long userId);
+
+    /**
+     * Sets the username of a user by their userId.
+     * JPQL: UPDATE User u SET u.username = :username WHERE u.userId = :userId
+     * @param username the new username to set
+     * @param userId the ID of the user
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.username = :username WHERE u.userId = :userId")
+    void setUsernameByUserId(@Param("username") String username, @Param("userId") Long userId);
+
+    /**
+     * Sets the password of a user by their userId.
+     * JPQL: UPDATE User u SET u.password = :password WHERE u.userId = :userId
+     * @param password the new password to set
+     * @param userId the ID of the user
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.password = :password WHERE u.userId = :userId")
+    void setPasswordByUserId(@Param("password") String password, @Param("userId") Long userId);
+
+    /**
+     * Retrieves a user by their username.
+     * JPQL: SELECT u FROM User u WHERE u.username = :username
+     *
+     * @param username the username of the user to retrieve
+     * @return Optional<User> containing the user if found, or empty otherwise
+     */
+    @Query("SELECT u FROM User u WHERE u.username = :username")
+    Optional<User> getUserByUsername(@Param("username") String username);
 }
