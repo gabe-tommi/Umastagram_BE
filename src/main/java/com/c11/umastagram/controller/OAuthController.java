@@ -21,10 +21,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.util.Date;
+import java.security.Key;
 
 import com.c11.umastagram.controller.oAuthModels.OAuth2State;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.c11.umastagram.model.User;
+import com.c11.umastagram.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.Base64;
@@ -40,9 +46,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OAuthController {
 
     private final RestTemplate restTemplate;
+    private final UserService userService;
 
-    public OAuthController(RestTemplate restTemplate) {
+    public OAuthController(RestTemplate restTemplate, UserService userService) {
         this.restTemplate = restTemplate;
+        this.userService = userService;
     }
 
     @Value("${spring.security.oauth2.client.registration.github-android.redirect-uri}")
@@ -86,6 +94,9 @@ public class OAuthController {
 
     @Value("${spring.security.oauth2.client.registration.google-android.client-secret}")
     private String googleAndroidClientSecret;
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
     // to randomly generate state parameter for OAuth2
     private String generateState() {
@@ -381,9 +392,38 @@ public class OAuthController {
             return handleValidationError("Failed to fetch user info: " + e.getMessage(), session);
         }
 
-        // For brevity, the full implementation is omitted here.
-        return new RedirectView("/"); // Placeholder
+        User user = userService.createOrUpdateOAuthUser(provider, userInfo);
+        String jwtToken = generateJwtToken(user);
+        
+        return ResponseEntity.ok(Map.of("token", jwtToken, "user", Map.of(
+            "userId", user.getUserId(),
+            "username", user.getUsername(),
+            "email", user.getEmail(),
+            "provider", user.getProvider()
+        )));
     }
+
+    public String generateJwtToken(User user){
+        // Step 1: Set expiration time (e.g., 24 hours)
+        long expirationTime = 86400000; // 24 hours in milliseconds
+        Date expirationDate = new Date(System.currentTimeMillis() + expirationTime);
+        
+        // Step 2: Create signing key from secret
+        Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        
+        // Step 3: Build and sign the JWT
+        return Jwts.builder()
+                .setSubject(user.getUserId().toString())  // User ID as subject
+                .claim("email", user.getEmail())     // Additional claims
+                .claim("username", user.getUsername())
+                .claim("provider", user.getProvider())
+                .setIssuedAt(new Date())                   // Token issued time
+                .setExpiration(expirationDate)             // Token expiration time
+                .signWith(key)                             // Sign with the key
+                .compact();                                 // Build the final token
+    }
+
+    
 
     private Map<String,String> getRedirectUriAndClientDetails(String provider, String platform) {
         Map<String, String> details = new HashMap<>();
