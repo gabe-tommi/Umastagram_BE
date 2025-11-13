@@ -359,11 +359,15 @@ public class OAuthController {
                                       String code,
                                       String state,
                                       HttpSession session) {
+        System.out.println("=== OAUTH CALLBACK STARTED ===");
+        System.out.println("Provider: " + provider + ", Code: " + (code != null ? code.substring(0, 10) + "..." : "null") + ", State: " + state);
+        
         // Implementation of callback handling goes here
         // This includes validating the state, exchanging the code for tokens,
         // retrieving user info, creating or fetching the user in the database,
         // generating a JWT token, and redirecting or responding with the token.
         OAuth2State stateData = stateStore.get(state);
+        System.out.println("State data from store: " + stateData);
         try{
             if (stateData == null || !stateData.getProvider().equals(provider) || stateData.isExpired(15 * 60 * 1000)) {
                 throw new IllegalArgumentException("Invalid or expired state parameter");
@@ -393,27 +397,41 @@ public class OAuthController {
             return new RedirectView(deepLinkUrl);
         } else {
             // For other platforms/providers: Proceed with server-side exchange
+            System.out.println("Proceeding with server-side token exchange for platform: " + platform);
             Map<String, String> tokenResponse = null;
             // Token Exchange and User Info Retrieval
             try{
                 Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, stateData.getPlatform());
+                System.out.println("Redirect details obtained: " + redirectDetails.keySet());
                 String redirectUri = redirectDetails.get("redirectUri");
                 String clientId = redirectDetails.get("clientId");
                 String clientSecret = redirectDetails.get("clientSecret");
+                System.out.println("Calling exchangeCodeForToken...");
                 tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret);
+                System.out.println("Token exchange successful, got token keys: " + tokenResponse.keySet());
             } catch (Exception e) {
+                System.out.println("Token exchange failed: " + e.getMessage());
+                e.printStackTrace();
                 return handleValidationError("Token exchange failed: " + e.getMessage(), session);
             }
             String accessToken = tokenResponse.get("access_token");
+            System.out.println("Access token obtained: " + (accessToken != null ? "yes" : "no"));
             Map<String, Object> userInfo;
             try {
+                System.out.println("Fetching user info...");
                 userInfo = fetchUserInfo(provider, accessToken);
+                System.out.println("User info fetched successfully: " + userInfo.keySet());
             } catch (Exception e) {
+                System.out.println("Failed to fetch user info: " + e.getMessage());
+                e.printStackTrace();
                 return handleValidationError("Failed to fetch user info: " + e.getMessage(), session);
             }
 
+            System.out.println("Creating/updating user...");
             User user = userService.createOrUpdateOAuthUser(provider, userInfo);
+            System.out.println("User created/updated: " + user.getUsername());
             String jwtToken = generateJwtToken(user);
+            System.out.println("JWT token generated");
             
             Map<String, Object> userData =  Map.of("token", jwtToken, "user", Map.of(
                 "userId", user.getUserId(),
