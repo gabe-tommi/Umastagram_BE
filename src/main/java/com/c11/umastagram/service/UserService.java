@@ -67,7 +67,7 @@ public class UserService {
         if (user.getUserId() != null && userRepository.getUserByUserId(user.getUserId()).isPresent()) {
             throw new IllegalArgumentException("User ID already exists");
         }
-        if (userRepository.getUserByEmail(email).isPresent()) {
+        if (userRepository.getUserByEmail(email) != null && userRepository.getUserByEmail(email).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
         if(provider != null && provider.equals("github")) {
