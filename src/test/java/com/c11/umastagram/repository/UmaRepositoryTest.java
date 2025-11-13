@@ -13,14 +13,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@EntityScan(basePackageClasses = Uma.class)
+@TestPropertySource(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
 public class UmaRepositoryTest {
 
     @Autowired
@@ -56,6 +65,18 @@ public class UmaRepositoryTest {
         assertThat(foundUmas.get()).hasSize(2);
         assertThat(foundUmas.get()).extracting(Uma::getUmaName)
                 .containsExactlyInAnyOrder("Special Week", "Silence Suzuka");
+    }
+
+    @BeforeEach
+    public void createUmaTableIfNeeded() {
+        // Create the `uma` table in the H2 in-memory DB so tests can run independent of Hibernate DDL
+        try {
+        entityManager.getEntityManager()
+                    .createNativeQuery("CREATE TABLE IF NOT EXISTS \"uma\" (\"uma_id\" BIGINT AUTO_INCREMENT PRIMARY KEY, \"uma_name\" VARCHAR(255), \"uma_image_link\" CLOB NOT NULL, \"uma_birthday\" DATE, \"fun_fact\" VARCHAR(255))")
+                    .executeUpdate();
+        } catch (Exception ignored) {
+            // If creation fails (table already exists or DDL not supported), ignore and let tests proceed
+        }
     }
 
     @Test
