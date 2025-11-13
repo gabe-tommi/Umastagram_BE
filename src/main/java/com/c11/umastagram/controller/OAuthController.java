@@ -53,46 +53,46 @@ public class OAuthController {
         this.userService = userService;
     }
 
-    @Value("${spring.security.oauth2.client.registration.github-android.redirect-uri}")
+    @Value("${GITHUB_CLIENT_REDIRECT_URI_ANDROID}")
     private String githubAndroidRedirectUri;
 
-    @Value("${spring.security.oauth2.client.registration.github-android.client-id}")
+    @Value("${GITHUB_CLIENT_ID_ANDROID}")
     private String githubAndroidClientId;
     
-    @Value("${spring.security.oauth2.client.registration.github-web.redirect-uri}")
+    @Value("${GITHUB_CLIENT_REDIRECT_URI_WEB}")
     private String githubWebRedirectUri;
 
-    @Value("${spring.security.oauth2.client.registration.github-web.client-id}")
+    @Value("${GITHUB_CLIENT_ID_WEB}")
     private String githubWebClientId;
 
-    @Value("${spring.security.oauth2.client.registration.google-android.redirect-uri}")
+    @Value("${GOOGLE_CLIENT_REDIRECT_URI_ANDROID}")
     private String googleAndroidRedirectUri;
 
-    @Value("${spring.security.oauth2.client.registration.google-android.client-id}")
+    @Value("${GOOGLE_CLIENT_ID_ANDROID}")
     private String googleAndroidClientId;
 
-    @Value("${spring.security.oauth2.client.registration.google-web.redirect-uri}")
+    @Value("${GOOGLE_CLIENT_REDIRECT_URI_WEB}")
     private String googleWebRedirectUri;
 
-    @Value("${spring.security.oauth2.client.registration.google-web.client-id}")
+    @Value("${GOOGLE_CLIENT_ID_WEB}")
     private String googleWebClientId;
 
-    @Value("${spring.security.oauth2.client.registration.github-web.scope}")
+    @Value("read:user,user:email")
     private String githubScope;
 
-    @Value("${spring.security.oauth2.client.registration.google-web.scope}")
+    @Value("profile,email")
     private String googleScope;
 
-    @Value("${spring.security.oauth2.client.registration.github-web.client-secret}")
+    @Value("${GITHUB_CLIENT_SECRET_WEB}")
     private String githubClientSecret;
 
-    @Value("${spring.security.oauth2.client.registration.google-web.client-secret}")
+    @Value("${GOOGLE_CLIENT_SECRET_WEB}")
     private String googleClientSecret;
 
-    @Value("${spring.security.oauth2.client.registration.github-android.client-secret}")
+    @Value("${GITHUB_CLIENT_SECRET_ANDROID}")
     private String githubAndroidClientSecret;
 
-    @Value("${spring.security.oauth2.client.registration.google-android.client-secret}")
+    @Value("${GOOGLE_CLIENT_SECRET_ANDROID}")
     private String googleAndroidClientSecret;
 
     @Value("${jwt.secret}")
