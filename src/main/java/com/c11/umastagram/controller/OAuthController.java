@@ -545,11 +545,14 @@ public class OAuthController {
     }
 
     private String buildFragmentData(String jwtToken, Map<String, Object> userData) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> user = (Map<String, Object>) userData.get("user");
+        
         return "token=" + URLEncoder.encode(jwtToken, StandardCharsets.UTF_8) +
-            "&userId=" + URLEncoder.encode(userData.get("userId").toString(), StandardCharsets.UTF_8) +
-            "&username=" + URLEncoder.encode((String)userData.get("username"), StandardCharsets.UTF_8) +
-            "&email=" + URLEncoder.encode((String)userData.get("email"), StandardCharsets.UTF_8) +
-            "&provider=" + URLEncoder.encode((String)userData.get("provider"), StandardCharsets.UTF_8);
+            "&userId=" + URLEncoder.encode(user.get("userId").toString(), StandardCharsets.UTF_8) +
+            "&username=" + URLEncoder.encode((String)user.get("username"), StandardCharsets.UTF_8) +
+            "&email=" + URLEncoder.encode((String)user.get("email"), StandardCharsets.UTF_8) +
+            "&provider=" + URLEncoder.encode((String)user.get("provider"), StandardCharsets.UTF_8);
     }
 
     public String generateJwtToken(User user){
