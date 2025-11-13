@@ -464,12 +464,15 @@ public class OAuthController {
             String jwtToken = generateJwtToken(user);
             System.out.println("JWT token generated");
             
-            Map<String, Object> userData =  Map.of("token", jwtToken, "user", Map.of(
-                "userId", user.getUserId(),
-                "username", user.getUsername(),
-                "email", user.getEmail(),
-                "provider", user.getProvider()
-            ));
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("token", jwtToken);
+            
+            Map<String, Object> userMap = new HashMap<>();
+            userMap.put("userId", user.getUserId());
+            userMap.put("username", user.getUsername());
+            userMap.put("email", user.getEmail() != null ? user.getEmail() : "");
+            userMap.put("provider", user.getProvider());
+            userData.put("user", userMap);
 
             if ("android".equals(platform)) {
                 // For Android (non-Google): Deep link redirect with JWT
