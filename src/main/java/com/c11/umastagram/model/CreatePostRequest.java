@@ -8,23 +8,23 @@ Summary: Helps create a post object to then add to the database
 package com.c11.umastagram.model;
 
 public class CreatePostRequest {
-    private String userId;
+    private Long userId;
     private String text;
     private String image;
 
     public CreatePostRequest() {}
 
-    public CreatePostRequest(String userId, String text, String image) {
+    public CreatePostRequest(Long userId, String text, String image) {
         this.userId = userId;
         this.text = text;
         this.image = image;
     }
 
-    public String getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
