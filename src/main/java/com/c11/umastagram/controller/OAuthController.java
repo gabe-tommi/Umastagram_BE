@@ -82,7 +82,7 @@ public class OAuthController {
     @Value("read:user,user:email")
     private String githubScope;
 
-    @Value("profile,email")
+    @Value("openid profile email")
     private String googleScope;
 
     @Value("${GITHUB_CLIENT_SECRET_WEB}")
