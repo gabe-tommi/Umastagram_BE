@@ -366,19 +366,42 @@ public class OAuthController {
         // This includes validating the state, exchanging the code for tokens,
         // retrieving user info, creating or fetching the user in the database,
         // generating a JWT token, and redirecting or responding with the token.
-        OAuth2State stateData = stateStore.get(state);
-        System.out.println("State data from store: " + stateData);
+        
+        // Validate state - check session first, then global store as fallback
+        String sessionState = (String) session.getAttribute("oauth_state");
+        String sessionProvider = (String) session.getAttribute("oauth_provider");
+        String sessionPlatform = (String) session.getAttribute("oauth_platform");
+        
+        System.out.println("Session state: " + sessionState + ", Provider: " + sessionProvider + ", Platform: " + sessionPlatform);
+        
         try{
-            if (stateData == null || !stateData.getProvider().equals(provider) || stateData.isExpired(15 * 60 * 1000)) {
-                throw new IllegalArgumentException("Invalid or expired state parameter");
-            }
-            if(session.getAttribute("oauth_state") == null || !session.getAttribute("oauth_state").equals(state)) {
+            // Primary validation: check if state matches session
+            if (sessionState == null || !sessionState.equals(state)) {
+                System.out.println("State parameter does not match session");
                 throw new IllegalArgumentException("State parameter does not match session");
             }
-            if(session.getAttribute("oauth_provider") == null || !session.getAttribute("oauth_provider").equals(provider)) {
+            if (sessionProvider == null || !sessionProvider.equals(provider)) {
+                System.out.println("Provider does not match session");
                 throw new IllegalArgumentException("Provider does not match session");
             }
+            
+            // Secondary validation: check global store if available
+            OAuth2State stateData = stateStore.get(state);
+            if (stateData != null && (!stateData.getProvider().equals(provider) || stateData.isExpired(15 * 60 * 1000))) {
+                System.out.println("State data validation failed");
+                throw new IllegalArgumentException("Invalid or expired state parameter");
+            }
+            
+            // If no stateData in global store, reconstruct from session
+            if (stateData == null && sessionPlatform != null) {
+                stateData = new OAuth2State(sessionProvider, sessionPlatform, System.currentTimeMillis());
+                System.out.println("Reconstructed state data from session: " + stateData);
+            } else if (stateData == null) {
+                System.out.println("No state data available");
+                throw new IllegalArgumentException("State data not available");
+            }
         } catch (IllegalArgumentException e) {
+            System.out.println("Validation error: " + e.getMessage());
             return handleValidationError(e.getMessage(), session);
         }
 
@@ -389,7 +412,8 @@ public class OAuthController {
         session.removeAttribute("oauth_platform");
 
         // Platform-specific response handling
-        String platform = stateData.getPlatform();
+        String platform = sessionPlatform; // Use platform from session
+        System.out.println("Using platform from session: " + platform);
         if ("android".equals(platform) && "google".equals(provider)) {
             // For Google Android: Skip server-side token exchange (use PKCE in app)
             // Return the code directly to the app via deep link
@@ -401,7 +425,7 @@ public class OAuthController {
             Map<String, String> tokenResponse = null;
             // Token Exchange and User Info Retrieval
             try{
-                Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, stateData.getPlatform());
+                Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, platform);
                 System.out.println("Redirect details obtained: " + redirectDetails.keySet());
                 String redirectUri = redirectDetails.get("redirectUri");
                 String clientId = redirectDetails.get("clientId");
