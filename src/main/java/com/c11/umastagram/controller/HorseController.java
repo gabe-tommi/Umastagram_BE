@@ -33,14 +33,14 @@ public class HorseController {
         }
 	}
 
-	@PostMapping("/saveHorse/{horseId}")
-	public ResponseEntity saveHorse(@PathVariable Long horseId) {
-		try {
-			Horse inputHorse = HorseService.findHorseById(horseId);
-            HorseService.save(inputHorse);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-	}
+	// @PostMapping("/saveHorse/{horseId}")
+	// public ResponseEntity saveHorse(@PathVariable Long horseId) {
+	// 	try {
+	// 		Horse inputHorse = HorseService.findHorseById(horseId);
+    //         HorseService.save(inputHorse);
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    //     }
+	// }
 
 }

@@ -26,7 +26,7 @@ public interface HorseRepository extends JpaRepository<Horse, Long> {
      * JPQL: SELECT h FROM Horse h WHERE h.horseId = :horseId
      */
     @Query("SELECT h FROM Horse h WHERE h.horseId = :horseId")
-    Optional<Horse> findHorseById(@Param("horseId") Long horseId);
+    Horse findHorseById(@Param("horseId") Long horseId);
 
     // --- 2. horseName (String) ---
 

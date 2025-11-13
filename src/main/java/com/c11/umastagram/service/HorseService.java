@@ -76,13 +76,16 @@ public class HorseService {
     // ----------------------------------------
 
     /** Find a Horse by its primary key (ID) */
-    public Optional<Horse> findHorseById(Long horseId) {
-        return horseRepository.findHorseById(horseId);
+    public static Horse findHorseById(Long horseId) {
+        HorseRepository hr;
+        return hr.findHorseById(horseId);
     }
 
     /** Retrieve all Horses from the repository */
-    public List<Horse> findAllHorses() {
-        return horseRepository.findAll();
+    public static List<Horse> findAllHorses() {
+        HorseRepository hr;
+
+        return hr.findAll();
     }
 
     /** Deletes a Horse by its ID */
