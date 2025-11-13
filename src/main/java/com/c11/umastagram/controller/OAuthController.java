@@ -2,6 +2,8 @@ package com.c11.umastagram.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -92,7 +94,7 @@ public class OAuthController {
     @Value("${GITHUB_CLIENT_SECRET_ANDROID}")
     private String githubAndroidClientSecret;
 
-    @Value("${GOOGLE_CLIENT_SECRET_ANDROID}")
+    @Value("${GOOGLE_CLIENT_SECRET_ANDROID:}")
     private String googleAndroidClientSecret;
 
     @Value("${jwt.secret}")
@@ -376,35 +378,6 @@ public class OAuthController {
             return handleValidationError(e.getMessage(), session);
         }
 
-        Map<String, String> tokenResponse = null;
-        // Token Exchange and User Info Retrieval
-        try{
-            Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, stateData.getPlatform());
-            String redirectUri = redirectDetails.get("redirectUri");
-            String clientId = redirectDetails.get("clientId");
-            String clientSecret = redirectDetails.get("clientSecret");
-            tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret);
-        } catch (Exception e) {
-            return handleValidationError("Token exchange failed: " + e.getMessage(), session);
-        }
-        String accessToken = tokenResponse.get("access_token");
-        Map<String, Object> userInfo;
-        try {
-            userInfo = fetchUserInfo(provider, accessToken);
-        } catch (Exception e) {
-            return handleValidationError("Failed to fetch user info: " + e.getMessage(), session);
-        }
-
-        User user = userService.createOrUpdateOAuthUser(provider, userInfo);
-        String jwtToken = generateJwtToken(user);
-        
-        Map<String, Object> userData =  Map.of("token", jwtToken, "user", Map.of(
-            "userId", user.getUserId(),
-            "username", user.getUsername(),
-            "email", user.getEmail(),
-            "provider", user.getProvider()
-        ));
-
         // Clean up state after successful authentication
         stateStore.remove(state);
         session.removeAttribute("oauth_state");
@@ -413,17 +386,88 @@ public class OAuthController {
 
         // Platform-specific response handling
         String platform = stateData.getPlatform();
-        if ("android".equals(platform)) {
-            // For Android: Deep link redirect
-            String deepLinkUrl = buildDeepLinkUrl(jwtToken, userData);
+        if ("android".equals(platform) && "google".equals(provider)) {
+            // For Google Android: Skip server-side token exchange (use PKCE in app)
+            // Return the code directly to the app via deep link
+            String deepLinkUrl = buildDeepLinkUrlForCode(code, state);
             return new RedirectView(deepLinkUrl);
-        } else if ("web".equals(platform)) {
-            // For Web: Frontend redirect with fragment data
-            String redirectUrl = buildWebRedirectUrl(jwtToken, userData);
-            return new RedirectView(redirectUrl);
         } else {
-            // Fallback to JSON for unknown platforms
-            return ResponseEntity.ok(Map.of("token", jwtToken, "user", userData));
+            // For other platforms/providers: Proceed with server-side exchange
+            Map<String, String> tokenResponse = null;
+            // Token Exchange and User Info Retrieval
+            try{
+                Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, stateData.getPlatform());
+                String redirectUri = redirectDetails.get("redirectUri");
+                String clientId = redirectDetails.get("clientId");
+                String clientSecret = redirectDetails.get("clientSecret");
+                tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret);
+            } catch (Exception e) {
+                return handleValidationError("Token exchange failed: " + e.getMessage(), session);
+            }
+            String accessToken = tokenResponse.get("access_token");
+            Map<String, Object> userInfo;
+            try {
+                userInfo = fetchUserInfo(provider, accessToken);
+            } catch (Exception e) {
+                return handleValidationError("Failed to fetch user info: " + e.getMessage(), session);
+            }
+
+            User user = userService.createOrUpdateOAuthUser(provider, userInfo);
+            String jwtToken = generateJwtToken(user);
+            
+            Map<String, Object> userData =  Map.of("token", jwtToken, "user", Map.of(
+                "userId", user.getUserId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "provider", user.getProvider()
+            ));
+
+            if ("android".equals(platform)) {
+                // For Android (non-Google): Deep link redirect with JWT
+                String deepLinkUrl = buildDeepLinkUrl(jwtToken, userData);
+                return new RedirectView(deepLinkUrl);
+            } else if ("web".equals(platform)) {
+                // For Web: Frontend redirect with fragment data
+                String redirectUrl = buildWebRedirectUrl(jwtToken, userData);
+                return new RedirectView(redirectUrl);
+            } else {
+                // Fallback to JSON for unknown platforms
+                return ResponseEntity.ok(Map.of("token", jwtToken, "user", userData));
+            }
+        }
+    }
+
+    @PostMapping("/google/android/token")
+    public ResponseEntity<Map<String, Object>> exchangeGoogleAndroidToken(@RequestBody Map<String, Object> requestBody) {
+        try {
+            // Extract access token and user info from request
+            String accessToken = (String) requestBody.get("access_token");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> userInfo = (Map<String, Object>) requestBody.get("user_info");
+
+            if (accessToken == null || userInfo == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Missing access_token or user_info"));
+            }
+
+            // Create or update user in database
+            User user = userService.createOrUpdateOAuthUser("google", userInfo);
+            String jwtToken = generateJwtToken(user);
+
+            // Return JWT token and user data
+            Map<String, Object> response = Map.of(
+                "token", jwtToken,
+                "user", Map.of(
+                    "userId", user.getUserId(),
+                    "username", user.getUsername(),
+                    "email", user.getEmail(),
+                    "provider", user.getProvider()
+                )
+            );
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Token exchange failed: " + e.getMessage()));
         }
     }
 
@@ -431,6 +475,15 @@ public class OAuthController {
         // Use your Android app's deep link scheme
         String baseUrl = "umastagram://auth/callback";
         String fragment = buildFragmentData(jwtToken, userData);
+        return baseUrl + "#" + fragment;
+    }
+
+    private String buildDeepLinkUrlForCode(String code, String state) {
+        // Use your Android app's deep link scheme for Google Android (PKCE flow)
+        String baseUrl = "umastagram://auth/callback";
+        String fragment = "code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
+            "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8) +
+            "&provider=google&platform=android";
         return baseUrl + "#" + fragment;
     }
 
@@ -479,7 +532,8 @@ public class OAuthController {
             } else if (provider.equals("google")) {
                 details.put("redirectUri", googleAndroidRedirectUri);
                 details.put("clientId", googleAndroidClientId);
-                details.put("clientSecret", googleAndroidClientSecret);
+                // Google Android uses PKCE - no client secret needed
+                details.put("clientSecret", "");
             } else {
                 throw new IllegalArgumentException("Unsupported provider: " + provider);
             }
