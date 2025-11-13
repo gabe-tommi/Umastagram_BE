@@ -32,7 +32,7 @@ public class PostsController {
     public ResponseEntity<?> createPost(@RequestBody CreatePostRequest request) {
         try {
             // Validate required fields
-            if (request.getUserId() == null || request.getUserId().isEmpty()) {
+            if (request.getUserId() == null) {
                 return ResponseEntity.badRequest().body("userId is required");
             }
             if (request.getText() == null || request.getText().isEmpty()) {
@@ -76,7 +76,7 @@ public class PostsController {
      * GET /api/posts/user/{userId}
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Posts>> getPostsByUser(@PathVariable String userId) {
+    public ResponseEntity<List<Posts>> getPostsByUser(@PathVariable Long userId) {
         try {
             List<Posts> posts = postsRepository.findByUserId(userId);
             return ResponseEntity.ok(posts);

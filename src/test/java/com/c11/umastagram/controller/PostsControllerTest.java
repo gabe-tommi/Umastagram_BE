@@ -44,7 +44,7 @@ public class PostsControllerTest {
     @BeforeEach
     public void setUp() {
         testPost = new Posts(
-            "user123",
+            123L,
             "This is a test post",
             "https://example.com/image.jpg",
             LocalDateTime.now()
@@ -52,7 +52,7 @@ public class PostsControllerTest {
         testPost.setId(1L);
 
         createPostRequest = new CreatePostRequest(
-            "user123",
+            123L,
             "This is a test post",
             "https://example.com/image.jpg"
         );
@@ -66,7 +66,7 @@ public class PostsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createPostRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userId", is("user123")))
+                .andExpect(jsonPath("$.userId", is(123)))
                 .andExpect(jsonPath("$.text", is("This is a test post")))
                 .andExpect(jsonPath("$.likes", is(0)));
 
@@ -76,7 +76,7 @@ public class PostsControllerTest {
     @Test
     public void testCreatePostMissingUserId() throws Exception {
         CreatePostRequest invalidRequest = new CreatePostRequest(
-            "",
+            null,
             "This is a test post",
             "https://example.com/image.jpg"
         );
@@ -92,7 +92,7 @@ public class PostsControllerTest {
     @Test
     public void testCreatePostMissingText() throws Exception {
         CreatePostRequest invalidRequest = new CreatePostRequest(
-            "user123",
+            123L,
             "",
             "https://example.com/image.jpg"
         );
@@ -108,7 +108,7 @@ public class PostsControllerTest {
     @Test
     public void testGetAllPosts() throws Exception {
         Posts post2 = new Posts(
-            "user456",
+            456L,
             "Another post",
             "https://example.com/image2.jpg",
             LocalDateTime.now()
@@ -121,23 +121,23 @@ public class PostsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].userId", is("user123")))
-                .andExpect(jsonPath("$[1].userId", is("user456")));
+                .andExpect(jsonPath("$[0].userId", is(123)))
+                .andExpect(jsonPath("$[1].userId", is(456)));
 
         verify(postsRepository, times(1)).findAll();
     }
 
     @Test
     public void testGetPostsByUser() throws Exception {
-        when(postsRepository.findByUserId("user123")).thenReturn(Arrays.asList(testPost));
+        when(postsRepository.findByUserId(123L)).thenReturn(Arrays.asList(testPost));
 
-        mockMvc.perform(get("/api/posts/user/user123")
+        mockMvc.perform(get("/api/posts/user/123")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].userId", is("user123")));
+                .andExpect(jsonPath("$[0].userId", is(123)));
 
-        verify(postsRepository, times(1)).findByUserId("user123");
+        verify(postsRepository, times(1)).findByUserId(123L);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class PostsControllerTest {
         mockMvc.perform(get("/api/posts/1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId", is("user123")))
+                .andExpect(jsonPath("$.userId", is(123)))
                 .andExpect(jsonPath("$.text", is("This is a test post")));
 
         verify(postsRepository, times(1)).findById(1L);
