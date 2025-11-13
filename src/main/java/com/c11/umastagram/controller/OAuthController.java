@@ -98,6 +98,9 @@ public class OAuthController {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
+    @Value("${app.web.success-redirect-url:https://feuma-b63c05ecb1df.herokuapp.com/tabs/posts}")
+    private String webSuccessRedirectUrl;
+
     // to randomly generate state parameter for OAuth2
     private String generateState() {
         SecureRandom random = new SecureRandom();
@@ -395,12 +398,53 @@ public class OAuthController {
         User user = userService.createOrUpdateOAuthUser(provider, userInfo);
         String jwtToken = generateJwtToken(user);
         
-        return ResponseEntity.ok(Map.of("token", jwtToken, "user", Map.of(
+        Map<String, Object> userData =  Map.of("token", jwtToken, "user", Map.of(
             "userId", user.getUserId(),
             "username", user.getUsername(),
             "email", user.getEmail(),
             "provider", user.getProvider()
-        )));
+        ));
+
+        // Clean up state after successful authentication
+        stateStore.remove(state);
+        session.removeAttribute("oauth_state");
+        session.removeAttribute("oauth_provider");
+        session.removeAttribute("oauth_platform");
+
+        // Platform-specific response handling
+        String platform = stateData.getPlatform();
+        if ("android".equals(platform)) {
+            // For Android: Deep link redirect
+            String deepLinkUrl = buildDeepLinkUrl(jwtToken, userData);
+            return new RedirectView(deepLinkUrl);
+        } else if ("web".equals(platform)) {
+            // For Web: Frontend redirect with fragment data
+            String redirectUrl = buildWebRedirectUrl(jwtToken, userData);
+            return new RedirectView(redirectUrl);
+        } else {
+            // Fallback to JSON for unknown platforms
+            return ResponseEntity.ok(Map.of("token", jwtToken, "user", userData));
+        }
+    }
+
+    private String buildDeepLinkUrl(String jwtToken, Map<String, Object> userData) {
+        // Use your Android app's deep link scheme
+        String baseUrl = "umastagram://auth/callback";
+        String fragment = buildFragmentData(jwtToken, userData);
+        return baseUrl + "#" + fragment;
+    }
+
+    private String buildWebRedirectUrl(String jwtToken, Map<String, Object> userData) {
+        String fragment = buildFragmentData(jwtToken, userData);
+        return webSuccessRedirectUrl + "#" + fragment;
+    }
+
+    private String buildFragmentData(String jwtToken, Map<String, Object> userData) {
+        return "token=" + URLEncoder.encode(jwtToken, StandardCharsets.UTF_8) +
+            "&userId=" + URLEncoder.encode(userData.get("userId").toString(), StandardCharsets.UTF_8) +
+            "&username=" + URLEncoder.encode((String)userData.get("username"), StandardCharsets.UTF_8) +
+            "&email=" + URLEncoder.encode((String)userData.get("email"), StandardCharsets.UTF_8) +
+            "&provider=" + URLEncoder.encode((String)userData.get("provider"), StandardCharsets.UTF_8);
     }
 
     public String generateJwtToken(User user){
