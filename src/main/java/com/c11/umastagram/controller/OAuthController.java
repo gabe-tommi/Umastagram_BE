@@ -359,6 +359,13 @@ public class OAuthController {
                                       String code,
                                       String state,
                                       HttpSession session) {
+        // LOG IMMEDIATELY - before any processing
+        System.out.println("=== OAUTH CALLBACK HIT ===");
+        System.out.println("Provider: " + provider);
+        System.out.println("Code present: " + (code != null));
+        System.out.println("State present: " + (state != null));
+        System.out.println("Session present: " + (session != null));
+        
         System.out.println("=== OAUTH CALLBACK STARTED ===");
         System.out.println("Provider: " + provider + ", Code: " + (code != null ? code.substring(0, 10) + "..." : "null") + ", State: " + state);
         
