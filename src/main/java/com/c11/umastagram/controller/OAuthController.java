@@ -526,17 +526,17 @@ public class OAuthController {
     private String buildDeepLinkUrl(String jwtToken, Map<String, Object> userData) {
         // Use your Android app's deep link scheme
         String baseUrl = "umastagram://auth/callback";
-        String fragment = buildFragmentData(jwtToken, userData);
-        return baseUrl + "#" + fragment;
+        String queryParams = buildFragmentData(jwtToken, userData);
+        return baseUrl + "?" + queryParams;
     }
 
     private String buildDeepLinkUrlForCode(String code, String state) {
         // Use your Android app's deep link scheme for Google Android (PKCE flow)
         String baseUrl = "umastagram://auth/callback";
-        String fragment = "code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
+        String queryParams = "code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
             "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8) +
             "&provider=google&platform=android";
-        return baseUrl + "#" + fragment;
+        return baseUrl + "?" + queryParams;
     }
 
     private String buildWebRedirectUrl(String jwtToken, Map<String, Object> userData) {
