@@ -473,17 +473,12 @@ public class OAuthController {
         // Platform-specific response handling
         String platform = sessionPlatform; // Use platform from session
         System.out.println("Using platform from session: " + platform);
-        if ("android".equals(platform) && "google".equals(provider)) {
-            // For Google Android: Skip server-side token exchange (use PKCE in app)
-            // Return the code directly to the app via deep link
-            String deepLinkUrl = buildDeepLinkUrlForCode(code, state);
-            return new RedirectView(deepLinkUrl);
-        } else {
-            // For other platforms/providers: Proceed with server-side exchange
-            System.out.println("Proceeding with server-side token exchange for platform: " + platform);
-            Map<String, String> tokenResponse = null;
-            // Token Exchange and User Info Retrieval
-            try{
+        
+        // Proceed with server-side token exchange for all platforms/providers
+        System.out.println("Proceeding with server-side token exchange for platform: " + platform);
+        Map<String, String> tokenResponse = null;
+        // Token Exchange and User Info Retrieval
+        try{
                 Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, platform);
                 System.out.println("Redirect details obtained: " + redirectDetails.keySet());
                 String redirectUri = redirectDetails.get("redirectUri");
@@ -527,7 +522,7 @@ public class OAuthController {
             userData.put("user", userMap);
 
             if ("android".equals(platform)) {
-                // For Android (non-Google): Deep link redirect with JWT
+                // For Android (all providers): Deep link redirect with JWT
                 String deepLinkUrl = buildDeepLinkUrl(jwtToken, userData);
                 return new RedirectView(deepLinkUrl);
             } else if ("web".equals(platform)) {
