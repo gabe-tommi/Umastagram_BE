@@ -91,7 +91,7 @@ public class OAuthController {
     private String githubClientSecret;
 
     @Value("${GOOGLE_CLIENT_SECRET_WEB}")
-    private String googleClientSecret;
+    private String googleClientSecretWeb;
 
     @Value("${GITHUB_CLIENT_SECRET_ANDROID}")
     private String githubAndroidClientSecret;
@@ -633,8 +633,8 @@ public class OAuthController {
             } else if (provider.equals("google")) {
                 details.put("redirectUri", googleAndroidRedirectUri);
                 details.put("clientId", googleAndroidClientId);
-                // Google Android uses PKCE - no client secret needed
-                details.put("clientSecret", "");
+                // Use web client secret for Android since we're using Web OAuth flow
+                details.put("clientSecret", googleAndroidClientSecret);
             } else {
                 throw new IllegalArgumentException("Unsupported provider: " + provider);
             }
@@ -646,7 +646,7 @@ public class OAuthController {
             } else if (provider.equals("google")) {
                 details.put("redirectUri", googleWebRedirectUri);
                 details.put("clientId", googleWebClientId);
-                details.put("clientSecret", googleClientSecret);
+                details.put("clientSecret", googleClientSecretWeb);
             } else {
                 throw new IllegalArgumentException("Unsupported provider: " + provider);
             }
