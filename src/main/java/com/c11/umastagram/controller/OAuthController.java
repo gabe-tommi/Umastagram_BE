@@ -155,7 +155,7 @@ public class OAuthController {
             } else if (provider.equals("google")) {
                 baseUrl = "https://accounts.google.com/o/oauth2/v2/auth?";
                 clientId = googleAndroidClientId;
-                redirectUri = googleAndroidRedirectUri;
+                redirectUri = "umastagram://oauth2redirect/google";
                 scope = googleScope;
             } else {
                 throw new IllegalArgumentException("Unsupported provider: " + provider);
