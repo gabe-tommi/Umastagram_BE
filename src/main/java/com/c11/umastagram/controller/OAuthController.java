@@ -533,7 +533,6 @@ public class OAuthController {
                 // Fallback to JSON for unknown platforms
                 return ResponseEntity.ok(Map.of("token", jwtToken, "user", userData));
             }
-        }
     }
 
     @PostMapping("/google/android/token")
