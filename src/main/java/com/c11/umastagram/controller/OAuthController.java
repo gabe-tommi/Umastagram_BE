@@ -10,6 +10,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Value;
@@ -111,6 +113,25 @@ public class OAuthController {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(stateBytes);
     }
 
+    // PKCE: Generate a random code_verifier (43-128 characters, base64url-encoded)
+    private String generateCodeVerifier() {
+        SecureRandom random = new SecureRandom();
+        byte[] verifierBytes = new byte[64]; // 64 bytes = 512 bits → ~86 base64url chars
+        random.nextBytes(verifierBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(verifierBytes);
+    }
+
+    // PKCE: Create code_challenge = BASE64URL(SHA256(code_verifier))
+    private String generateCodeChallenge(String codeVerifier) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(codeVerifier.getBytes(StandardCharsets.US_ASCII));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
+    }
+
     private final Map<String, OAuth2State> stateStore = new ConcurrentHashMap<>();
 
     @GetMapping("/{provider}/{platform}")
@@ -162,7 +183,17 @@ public class OAuthController {
 
         // Generate unique state for this request
         String state = generateState();
-        OAuth2State stateData = new OAuth2State(provider, platform, System.currentTimeMillis());
+        
+        // PKCE: Generate code_verifier and code_challenge for mobile platforms
+        String codeVerifier = null;
+        String codeChallenge = null;
+        
+        if (platform.equals("android") && provider.equals("google")) {
+            codeVerifier = generateCodeVerifier();
+            codeChallenge = generateCodeChallenge(codeVerifier);
+        }
+        
+        OAuth2State stateData = new OAuth2State(provider, platform, System.currentTimeMillis(), codeVerifier);
         stateStore.put(state, stateData);
         session.setAttribute("oauth_state", state);
         session.setAttribute("oauth_provider", provider);
@@ -174,6 +205,12 @@ public class OAuthController {
                 "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8) +
                 "&response_type=code" +
                 "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
+        
+        // Add PKCE parameters for Android + Google
+        if (codeChallenge != null) {
+            authUrl += "&code_challenge=" + URLEncoder.encode(codeChallenge, StandardCharsets.UTF_8) +
+                       "&code_challenge_method=S256";
+        }
 
         return new RedirectView(authUrl);
     }
@@ -193,7 +230,7 @@ public class OAuthController {
         return new RedirectView(errorRedirectUrl);
     }
 
-    private Map<String, String> exchangeCodeForToken(String provider, String code, String redirectUri, String clientId, String clientSecret) {
+    private Map<String, String> exchangeCodeForToken(String provider, String code, String redirectUri, String clientId, String clientSecret, String codeVerifier) {
         // Determine token endpoint URL
         String tokenUrl;
         if ("github".equals(provider)) {
@@ -214,7 +251,16 @@ public class OAuthController {
         requestBody.add("code", code);
         requestBody.add("redirect_uri", redirectUri);
         requestBody.add("client_id", clientId);
-        requestBody.add("client_secret", clientSecret);
+        
+        // Add client_secret only if present (not needed for PKCE flows)
+        if (clientSecret != null && !clientSecret.isEmpty()) {
+            requestBody.add("client_secret", clientSecret);
+        }
+        
+        // Add code_verifier for PKCE flows
+        if (codeVerifier != null && !codeVerifier.isEmpty()) {
+            requestBody.add("code_verifier", codeVerifier);
+        }
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
 
@@ -381,6 +427,9 @@ public class OAuthController {
         
         System.out.println("Session state: " + sessionState + ", Provider: " + sessionProvider + ", Platform: " + sessionPlatform);
         
+        // Declare codeVerifier outside try block so it's accessible later
+        String codeVerifier = null;
+        
         try{
             // Primary validation: check if state matches session
             if (sessionState == null || !sessionState.equals(state)) {
@@ -401,12 +450,15 @@ public class OAuthController {
             
             // If no stateData in global store, reconstruct from session
             if (stateData == null && sessionPlatform != null) {
-                stateData = new OAuth2State(sessionProvider, sessionPlatform, System.currentTimeMillis());
+                stateData = new OAuth2State(sessionProvider, sessionPlatform, System.currentTimeMillis(), null);
                 System.out.println("Reconstructed state data from session: " + stateData);
             } else if (stateData == null) {
                 System.out.println("No state data available");
                 throw new IllegalArgumentException("State data not available");
             }
+            
+            // Extract code_verifier if present (for PKCE flows)
+            codeVerifier = stateData.getCodeVerifier();
         } catch (IllegalArgumentException e) {
             System.out.println("Validation error: " + e.getMessage());
             return handleValidationError(e.getMessage(), session);
@@ -438,7 +490,7 @@ public class OAuthController {
                 String clientId = redirectDetails.get("clientId");
                 String clientSecret = redirectDetails.get("clientSecret");
                 System.out.println("Calling exchangeCodeForToken...");
-                tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret);
+                tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret, codeVerifier);
                 System.out.println("Token exchange successful, got token keys: " + tokenResponse.keySet());
             } catch (Exception e) {
                 System.out.println("Token exchange failed: " + e.getMessage());
