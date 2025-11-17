@@ -105,15 +105,10 @@ public class OAuthController {
     @Value("${app.web.success-redirect-url:https://feuma-b63c05ecb1df.herokuapp.com/tabs/posts}")
     private String webSuccessRedirectUrl;
 
-    // to randomly generate state parameter for OAuth2
-    private String generateState() {
-        SecureRandom random = new SecureRandom();
-        byte[] stateBytes = new byte[32]; // 256 bits of entropy
-        random.nextBytes(stateBytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(stateBytes);
-    }
+    
 
     // PKCE: Generate a random code_verifier (43-128 characters, base64url-encoded)
+    @Deprecated
     private String generateCodeVerifier() {
         SecureRandom random = new SecureRandom();
         byte[] verifierBytes = new byte[64]; // 64 bytes = 512 bits → ~86 base64url chars
@@ -122,6 +117,7 @@ public class OAuthController {
     }
 
     // PKCE: Create code_challenge = BASE64URL(SHA256(code_verifier))
+    @Deprecated
     private String generateCodeChallenge(String codeVerifier) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -134,6 +130,14 @@ public class OAuthController {
 
     private final Map<String, OAuth2State> stateStore = new ConcurrentHashMap<>();
 
+    /**
+     * Initiates the OAuth2 login flow by redirecting to the provider's authorization URL
+     * by the user's platform (android or web) and the OAuth2 provider (github or google).
+     * @param provider the OAuth2 provider (e.g., "github", "google")
+     * @param platform the platform (e.g., "android", "web")
+     * @param session the HTTP session to store state information
+     * @return RedirectView to the provider's authorization URL
+     */
     @GetMapping("/{provider}/{platform}")
     public RedirectView oauthLogin(@PathVariable String provider,
                                    @PathVariable String platform,
@@ -215,7 +219,186 @@ public class OAuthController {
         return new RedirectView(authUrl);
     }
 
+    // to randomly generate state parameter for OAuth2
+    private String generateState() {
+        SecureRandom random = new SecureRandom();
+        byte[] stateBytes = new byte[32]; // 256 bits of entropy
+        random.nextBytes(stateBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(stateBytes);
+    }
     
+    /**
+     * 
+     */
+    @GetMapping("/{provider}/callback")
+    public Object oauthCallback(@PathVariable String provider,
+                                      String code,
+                                      String state,
+                                      HttpSession session) {
+        // LOG IMMEDIATELY - before any processing
+        System.out.println("=== OAUTH CALLBACK HIT ===");
+        System.out.println("Provider: " + provider);
+        System.out.println("Code present: " + (code != null));
+        System.out.println("State present: " + (state != null));
+        System.out.println("Session present: " + (session != null));
+        
+        System.out.println("=== OAUTH CALLBACK STARTED ===");
+        System.out.println("Provider: " + provider + ", Code: " + (code != null ? code.substring(0, 10) + "..." : "null") + ", State: " + state);
+        
+        // Implementation of callback handling goes here
+        // This includes validating the state, exchanging the code for tokens,
+        // retrieving user info, creating or fetching the user in the database,
+        // generating a JWT token, and redirecting or responding with the token.
+        
+        // Validate state - check session first, then global store as fallback
+        String sessionState = (String) session.getAttribute("oauth_state");
+        String sessionProvider = (String) session.getAttribute("oauth_provider");
+        String sessionPlatform = (String) session.getAttribute("oauth_platform");
+        
+        System.out.println("Session state: " + sessionState + ", Provider: " + sessionProvider + ", Platform: " + sessionPlatform);
+        
+        // Declare codeVerifier outside try block so it's accessible later
+        String codeVerifier = null;
+        
+        try{
+            // Primary validation: check if state matches session
+            if (sessionState == null || !sessionState.equals(state)) {
+                System.out.println("State parameter does not match session");
+                throw new IllegalArgumentException("State parameter does not match session");
+            }
+            if (sessionProvider == null || !sessionProvider.equals(provider)) {
+                System.out.println("Provider does not match session");
+                throw new IllegalArgumentException("Provider does not match session");
+            }
+            
+            // Secondary validation: check global store if available
+            OAuth2State stateData = stateStore.get(state);
+            if (stateData != null && (!stateData.getProvider().equals(provider) || stateData.isExpired(15 * 60 * 1000))) {
+                System.out.println("State data validation failed");
+                throw new IllegalArgumentException("Invalid or expired state parameter");
+            }
+            
+            // If no stateData in global store, reconstruct from session
+            if (stateData == null && sessionPlatform != null) {
+                stateData = new OAuth2State(sessionProvider, sessionPlatform, System.currentTimeMillis());
+                System.out.println("Reconstructed state data from session: " + stateData);
+            } else if (stateData == null) {
+                System.out.println("No state data available");
+                throw new IllegalArgumentException("State data not available");
+            }
+            
+            // Extract code_verifier if present (for PKCE flows)
+            // codeVerifier = stateData.getCodeVerifier();
+        } catch (IllegalArgumentException e) {
+            System.out.println("Validation error: " + e.getMessage());
+            return handleValidationError(e.getMessage(), session);
+        }
+
+        // Clean up state after successful authentication
+        stateStore.remove(state);
+        session.removeAttribute("oauth_state");
+        session.removeAttribute("oauth_provider");
+        session.removeAttribute("oauth_platform");
+
+        // Platform-specific response handling
+        String platform = sessionPlatform; // Use platform from session
+        System.out.println("Using platform from session: " + platform);
+        
+        // Proceed with server-side token exchange for all platforms/providers
+        System.out.println("Proceeding with server-side token exchange for platform: " + platform);
+        Map<String, String> tokenResponse = null;
+        // Token Exchange and User Info Retrieval
+        try{
+                Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, platform);
+                System.out.println("Redirect details obtained: " + redirectDetails.keySet());
+                String redirectUri = redirectDetails.get("redirectUri");
+                String clientId = redirectDetails.get("clientId");
+                String clientSecret = redirectDetails.get("clientSecret");
+                System.out.println("Calling exchangeCodeForToken...");
+                tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret);
+                System.out.println("Token exchange successful, got token keys: " + tokenResponse.keySet());
+            } catch (Exception e) {
+                System.out.println("Token exchange failed: " + e.getMessage());
+                e.printStackTrace();
+                return handleValidationError("Token exchange failed: " + e.getMessage(), session);
+            }
+            String accessToken = tokenResponse.get("access_token");
+            System.out.println("Access token obtained: " + (accessToken != null ? "yes" : "no"));
+            Map<String, Object> userInfo;
+            try {
+                System.out.println("Fetching user info...");
+                userInfo = fetchUserInfo(provider, accessToken);
+                System.out.println("User info fetched successfully: " + userInfo.keySet());
+            } catch (Exception e) {
+                System.out.println("Failed to fetch user info: " + e.getMessage());
+                e.printStackTrace();
+                return handleValidationError("Failed to fetch user info: " + e.getMessage(), session);
+            }
+
+            System.out.println("Creating/updating user...");
+            User user = userService.createOrUpdateOAuthUser(provider, userInfo);
+            System.out.println("User created/updated: " + user.getUsername());
+            String jwtToken = generateJwtToken(user);
+            System.out.println("JWT token generated");
+            
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("token", jwtToken);
+            
+            Map<String, Object> userMap = new HashMap<>();
+            userMap.put("userId", user.getUserId());
+            userMap.put("username", user.getUsername());
+            userMap.put("email", user.getEmail() != null ? user.getEmail() : "");
+            userMap.put("provider", user.getProvider());
+            userData.put("user", userMap);
+
+            if ("android".equals(platform)) {
+                // For Android (all providers): Deep link redirect with JWT
+                String deepLinkUrl = buildDeepLinkUrl(jwtToken, userData);
+                return new RedirectView(deepLinkUrl);
+            } else if ("web".equals(platform)) {
+                // For Web: Frontend redirect with fragment data
+                String redirectUrl = buildWebRedirectUrl(jwtToken, userData);
+                return new RedirectView(redirectUrl);
+            } else {
+                // Fallback to JSON for unknown platforms
+                return ResponseEntity.ok(Map.of("token", jwtToken, "user", userData));
+            }
+    }
+
+    @Deprecated
+    @PostMapping("/google/android/token")
+    public ResponseEntity<Map<String, Object>> exchangeGoogleAndroidToken(@RequestBody Map<String, Object> requestBody) {
+        try {
+            // Extract access token and user info from request
+            String accessToken = (String) requestBody.get("access_token");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> userInfo = (Map<String, Object>) requestBody.get("user_info");
+
+            if (accessToken == null || userInfo == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Missing access_token or user_info"));
+            }
+
+            // Create or update user in database
+            User user = userService.createOrUpdateOAuthUser("google", userInfo);
+            String jwtToken = generateJwtToken(user);
+
+            // Return JWT token and user data
+            Map<String, Object> response = Map.of(
+                "token", jwtToken,
+                "user", Map.of(
+                    "userId", user.getUserId(),
+                    "username", user.getUsername(),
+                    "email", user.getEmail(),
+                    "provider", user.getProvider()
+                )
+            );
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Token exchange failed: " + e.getMessage()));
+        }
+    }
 
     private Map<String, String> exchangeCodeForToken(String provider, String code, String redirectUri, String clientId, String clientSecret) {
         // Determine token endpoint URL
@@ -387,175 +570,6 @@ public class OAuthController {
         return userInfo;
     }
 
-    @GetMapping("/{provider}/callback")
-    public Object oauthCallback(@PathVariable String provider,
-                                      String code,
-                                      String state,
-                                      HttpSession session) {
-        // LOG IMMEDIATELY - before any processing
-        System.out.println("=== OAUTH CALLBACK HIT ===");
-        System.out.println("Provider: " + provider);
-        System.out.println("Code present: " + (code != null));
-        System.out.println("State present: " + (state != null));
-        System.out.println("Session present: " + (session != null));
-        
-        System.out.println("=== OAUTH CALLBACK STARTED ===");
-        System.out.println("Provider: " + provider + ", Code: " + (code != null ? code.substring(0, 10) + "..." : "null") + ", State: " + state);
-        
-        // Implementation of callback handling goes here
-        // This includes validating the state, exchanging the code for tokens,
-        // retrieving user info, creating or fetching the user in the database,
-        // generating a JWT token, and redirecting or responding with the token.
-        
-        // Validate state - check session first, then global store as fallback
-        String sessionState = (String) session.getAttribute("oauth_state");
-        String sessionProvider = (String) session.getAttribute("oauth_provider");
-        String sessionPlatform = (String) session.getAttribute("oauth_platform");
-        
-        System.out.println("Session state: " + sessionState + ", Provider: " + sessionProvider + ", Platform: " + sessionPlatform);
-        
-        // Declare codeVerifier outside try block so it's accessible later
-        String codeVerifier = null;
-        
-        try{
-            // Primary validation: check if state matches session
-            if (sessionState == null || !sessionState.equals(state)) {
-                System.out.println("State parameter does not match session");
-                throw new IllegalArgumentException("State parameter does not match session");
-            }
-            if (sessionProvider == null || !sessionProvider.equals(provider)) {
-                System.out.println("Provider does not match session");
-                throw new IllegalArgumentException("Provider does not match session");
-            }
-            
-            // Secondary validation: check global store if available
-            OAuth2State stateData = stateStore.get(state);
-            if (stateData != null && (!stateData.getProvider().equals(provider) || stateData.isExpired(15 * 60 * 1000))) {
-                System.out.println("State data validation failed");
-                throw new IllegalArgumentException("Invalid or expired state parameter");
-            }
-            
-            // If no stateData in global store, reconstruct from session
-            if (stateData == null && sessionPlatform != null) {
-                stateData = new OAuth2State(sessionProvider, sessionPlatform, System.currentTimeMillis());
-                System.out.println("Reconstructed state data from session: " + stateData);
-            } else if (stateData == null) {
-                System.out.println("No state data available");
-                throw new IllegalArgumentException("State data not available");
-            }
-            
-            // Extract code_verifier if present (for PKCE flows)
-            // codeVerifier = stateData.getCodeVerifier();
-        } catch (IllegalArgumentException e) {
-            System.out.println("Validation error: " + e.getMessage());
-            return handleValidationError(e.getMessage(), session);
-        }
-
-        // Clean up state after successful authentication
-        stateStore.remove(state);
-        session.removeAttribute("oauth_state");
-        session.removeAttribute("oauth_provider");
-        session.removeAttribute("oauth_platform");
-
-        // Platform-specific response handling
-        String platform = sessionPlatform; // Use platform from session
-        System.out.println("Using platform from session: " + platform);
-        
-        // Proceed with server-side token exchange for all platforms/providers
-        System.out.println("Proceeding with server-side token exchange for platform: " + platform);
-        Map<String, String> tokenResponse = null;
-        // Token Exchange and User Info Retrieval
-        try{
-                Map<String, String> redirectDetails = getRedirectUriAndClientDetails(provider, platform);
-                System.out.println("Redirect details obtained: " + redirectDetails.keySet());
-                String redirectUri = redirectDetails.get("redirectUri");
-                String clientId = redirectDetails.get("clientId");
-                String clientSecret = redirectDetails.get("clientSecret");
-                System.out.println("Calling exchangeCodeForToken...");
-                tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret);
-                System.out.println("Token exchange successful, got token keys: " + tokenResponse.keySet());
-            } catch (Exception e) {
-                System.out.println("Token exchange failed: " + e.getMessage());
-                e.printStackTrace();
-                return handleValidationError("Token exchange failed: " + e.getMessage(), session);
-            }
-            String accessToken = tokenResponse.get("access_token");
-            System.out.println("Access token obtained: " + (accessToken != null ? "yes" : "no"));
-            Map<String, Object> userInfo;
-            try {
-                System.out.println("Fetching user info...");
-                userInfo = fetchUserInfo(provider, accessToken);
-                System.out.println("User info fetched successfully: " + userInfo.keySet());
-            } catch (Exception e) {
-                System.out.println("Failed to fetch user info: " + e.getMessage());
-                e.printStackTrace();
-                return handleValidationError("Failed to fetch user info: " + e.getMessage(), session);
-            }
-
-            System.out.println("Creating/updating user...");
-            User user = userService.createOrUpdateOAuthUser(provider, userInfo);
-            System.out.println("User created/updated: " + user.getUsername());
-            String jwtToken = generateJwtToken(user);
-            System.out.println("JWT token generated");
-            
-            Map<String, Object> userData = new HashMap<>();
-            userData.put("token", jwtToken);
-            
-            Map<String, Object> userMap = new HashMap<>();
-            userMap.put("userId", user.getUserId());
-            userMap.put("username", user.getUsername());
-            userMap.put("email", user.getEmail() != null ? user.getEmail() : "");
-            userMap.put("provider", user.getProvider());
-            userData.put("user", userMap);
-
-            if ("android".equals(platform)) {
-                // For Android (all providers): Deep link redirect with JWT
-                String deepLinkUrl = buildDeepLinkUrl(jwtToken, userData);
-                return new RedirectView(deepLinkUrl);
-            } else if ("web".equals(platform)) {
-                // For Web: Frontend redirect with fragment data
-                String redirectUrl = buildWebRedirectUrl(jwtToken, userData);
-                return new RedirectView(redirectUrl);
-            } else {
-                // Fallback to JSON for unknown platforms
-                return ResponseEntity.ok(Map.of("token", jwtToken, "user", userData));
-            }
-    }
-
-    @PostMapping("/google/android/token")
-    public ResponseEntity<Map<String, Object>> exchangeGoogleAndroidToken(@RequestBody Map<String, Object> requestBody) {
-        try {
-            // Extract access token and user info from request
-            String accessToken = (String) requestBody.get("access_token");
-            @SuppressWarnings("unchecked")
-            Map<String, Object> userInfo = (Map<String, Object>) requestBody.get("user_info");
-
-            if (accessToken == null || userInfo == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Missing access_token or user_info"));
-            }
-
-            // Create or update user in database
-            User user = userService.createOrUpdateOAuthUser("google", userInfo);
-            String jwtToken = generateJwtToken(user);
-
-            // Return JWT token and user data
-            Map<String, Object> response = Map.of(
-                "token", jwtToken,
-                "user", Map.of(
-                    "userId", user.getUserId(),
-                    "username", user.getUsername(),
-                    "email", user.getEmail(),
-                    "provider", user.getProvider()
-                )
-            );
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Token exchange failed: " + e.getMessage()));
-        }
-    }
-
     private String buildDeepLinkUrl(String jwtToken, Map<String, Object> userData) {
         // Use your Android app's deep link scheme
         String baseUrl = "umastagram://auth/callback";
@@ -607,8 +621,6 @@ public class OAuthController {
                 .signWith(key)                             // Sign with the key
                 .compact();                                 // Build the final token
     }
-
-    
 
     private Map<String,String> getRedirectUriAndClientDetails(String provider, String platform) {
         Map<String, String> details = new HashMap<>();
