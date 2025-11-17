@@ -14,16 +14,16 @@ public class OAuth2State {
     private final long createdAt;
     // private final String codeVerifier; // PKCE code_verifier
 
-    /**
-     * Creates a new OAuth2State instance.
-     *
-     * @param provider the OAuth2 provider (e.g., "github", "google")
-     * @param platform the platform (e.g., "android", "web")
-     * @param createdAt the timestamp when the state was created (milliseconds since epoch)
-     */
-    public OAuth2State(String provider, String platform, long createdAt) {
-        this(provider, platform, createdAt);
-    }
+    // /**
+    //  * Creates a new OAuth2State instance.
+    //  *
+    //  * @param provider the OAuth2 provider (e.g., "github", "google")
+    //  * @param platform the platform (e.g., "android", "web")
+    //  * @param createdAt the timestamp when the state was created (milliseconds since epoch)
+    //  */
+    // public OAuth2State(String provider, String platform, long createdAt) {
+    //     this(provider, platform, createdAt);
+    // }
 
     /**
      * Creates a new OAuth2State instance with PKCE support.

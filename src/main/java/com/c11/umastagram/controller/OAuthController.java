@@ -193,7 +193,7 @@ public class OAuthController {
         //     codeChallenge = generateCodeChallenge(codeVerifier);
         // }
         
-        OAuth2State stateData = new OAuth2State(provider, platform, System.currentTimeMillis(), codeVerifier);
+        OAuth2State stateData = new OAuth2State(provider, platform, System.currentTimeMillis());
         stateStore.put(state, stateData);
         session.setAttribute("oauth_state", state);
         session.setAttribute("oauth_provider", provider);
@@ -437,7 +437,7 @@ public class OAuthController {
             
             // If no stateData in global store, reconstruct from session
             if (stateData == null && sessionPlatform != null) {
-                stateData = new OAuth2State(sessionProvider, sessionPlatform, System.currentTimeMillis(), null);
+                stateData = new OAuth2State(sessionProvider, sessionPlatform, System.currentTimeMillis());
                 System.out.println("Reconstructed state data from session: " + stateData);
             } else if (stateData == null) {
                 System.out.println("No state data available");
