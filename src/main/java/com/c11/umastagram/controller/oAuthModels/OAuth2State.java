@@ -12,7 +12,7 @@ public class OAuth2State {
     private final String provider;
     private final String platform;
     private final long createdAt;
-    private final String codeVerifier; // PKCE code_verifier
+    // private final String codeVerifier; // PKCE code_verifier
 
     /**
      * Creates a new OAuth2State instance.
@@ -22,7 +22,7 @@ public class OAuth2State {
      * @param createdAt the timestamp when the state was created (milliseconds since epoch)
      */
     public OAuth2State(String provider, String platform, long createdAt) {
-        this(provider, platform, createdAt, null);
+        this(provider, platform, createdAt);
     }
 
     /**
@@ -33,11 +33,11 @@ public class OAuth2State {
      * @param createdAt the timestamp when the state was created (milliseconds since epoch)
      * @param codeVerifier the PKCE code_verifier (for mobile/native apps)
      */
-    public OAuth2State(String provider, String platform, long createdAt, String codeVerifier) {
+    public OAuth2State(String provider, String platform, long createdAt) {
         this.provider = provider;
         this.platform = platform;
         this.createdAt = createdAt;
-        this.codeVerifier = codeVerifier;
+        // this.codeVerifier = codeVerifier;
     }
 
     public String getProvider() {
@@ -54,9 +54,9 @@ public class OAuth2State {
         return createdAt;
     }
 
-    public String getCodeVerifier() {
-        return codeVerifier;
-    }
+    // public String getCodeVerifier() {
+    //     return codeVerifier;
+    // }
 
     /**
      * Checks if the state has expired.
@@ -74,7 +74,6 @@ public class OAuth2State {
                 "provider='" + provider + '\'' +
                 ", platform='" + platform + '\'' +
                 ", createdAt=" + createdAt +
-                ", codeVerifier=" + (codeVerifier != null ? "[REDACTED]" : "null") +
                 '}';
     }
 }

@@ -185,13 +185,13 @@ public class OAuthController {
         String state = generateState();
         
         // PKCE: Generate code_verifier and code_challenge for mobile platforms
-        String codeVerifier = null;
-        String codeChallenge = null;
+        // String codeVerifier = null;
+        // String codeChallenge = null;
         
-        if (platform.equals("android") && provider.equals("google")) {
-            codeVerifier = generateCodeVerifier();
-            codeChallenge = generateCodeChallenge(codeVerifier);
-        }
+        // if (platform.equals("android") && provider.equals("google")) {
+        //     codeVerifier = generateCodeVerifier();
+        //     codeChallenge = generateCodeChallenge(codeVerifier);
+        // }
         
         OAuth2State stateData = new OAuth2State(provider, platform, System.currentTimeMillis(), codeVerifier);
         stateStore.put(state, stateData);
@@ -207,30 +207,17 @@ public class OAuthController {
                 "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
         
         // Add PKCE parameters for Android + Google
-        if (codeChallenge != null) {
-            authUrl += "&code_challenge=" + URLEncoder.encode(codeChallenge, StandardCharsets.UTF_8) +
-                       "&code_challenge_method=S256";
-        }
+        // if (codeChallenge != null) {
+        //     authUrl += "&code_challenge=" + URLEncoder.encode(codeChallenge, StandardCharsets.UTF_8) +
+        //                "&code_challenge_method=S256";
+        // }
 
         return new RedirectView(authUrl);
     }
 
-    private RedirectView handleValidationError(String message, HttpSession session) {
-        // Clean up state from store and session
-        String state = (String) session.getAttribute("oauth_state");
-        if (state != null) {
-            stateStore.remove(state);
-        }
-        session.removeAttribute("oauth_state");
-        session.removeAttribute("oauth_provider");
-        session.removeAttribute("oauth_platform");
+    
 
-        // Redirect to an error page or return an error response
-        String errorRedirectUrl = "/error?message=" + URLEncoder.encode(message, StandardCharsets.UTF_8);
-        return new RedirectView(errorRedirectUrl);
-    }
-
-    private Map<String, String> exchangeCodeForToken(String provider, String code, String redirectUri, String clientId, String clientSecret, String codeVerifier) {
+    private Map<String, String> exchangeCodeForToken(String provider, String code, String redirectUri, String clientId, String clientSecret) {
         // Determine token endpoint URL
         String tokenUrl;
         if ("github".equals(provider)) {
@@ -258,9 +245,9 @@ public class OAuthController {
         }
         
         // Add code_verifier for PKCE flows
-        if (codeVerifier != null && !codeVerifier.isEmpty()) {
-            requestBody.add("code_verifier", codeVerifier);
-        }
+        // if (codeVerifier != null && !codeVerifier.isEmpty()) {
+        //     requestBody.add("code_verifier", codeVerifier);
+        // }
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
 
@@ -458,7 +445,7 @@ public class OAuthController {
             }
             
             // Extract code_verifier if present (for PKCE flows)
-            codeVerifier = stateData.getCodeVerifier();
+            // codeVerifier = stateData.getCodeVerifier();
         } catch (IllegalArgumentException e) {
             System.out.println("Validation error: " + e.getMessage());
             return handleValidationError(e.getMessage(), session);
@@ -485,7 +472,7 @@ public class OAuthController {
                 String clientId = redirectDetails.get("clientId");
                 String clientSecret = redirectDetails.get("clientSecret");
                 System.out.println("Calling exchangeCodeForToken...");
-                tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret, codeVerifier);
+                tokenResponse = exchangeCodeForToken(provider, code, redirectUri, clientId, clientSecret);
                 System.out.println("Token exchange successful, got token keys: " + tokenResponse.keySet());
             } catch (Exception e) {
                 System.out.println("Token exchange failed: " + e.getMessage());
@@ -654,5 +641,20 @@ public class OAuthController {
             throw new IllegalArgumentException("Unsupported platform: " + platform);
         }
         return details;
+    }
+
+    private RedirectView handleValidationError(String message, HttpSession session) {
+        // Clean up state from store and session
+        String state = (String) session.getAttribute("oauth_state");
+        if (state != null) {
+            stateStore.remove(state);
+        }
+        session.removeAttribute("oauth_state");
+        session.removeAttribute("oauth_provider");
+        session.removeAttribute("oauth_platform");
+
+        // Redirect to an error page or return an error response
+        String errorRedirectUrl = "/error?message=" + URLEncoder.encode(message, StandardCharsets.UTF_8);
+        return new RedirectView(errorRedirectUrl);
     }
 }
