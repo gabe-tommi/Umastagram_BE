@@ -1,3 +1,11 @@
+/*
+    Author: Armando Vega
+    Date Created: 9 November 2025
+    Last Modified By: Armando Vega
+    Date Last Modified: 17 November 2025 
+    Summary: OAuthController handles OAuth2 login flows for GitHub and Google,
+             supporting both Android and Web platforms with CSRF protection. 
+ */
 package com.c11.umastagram.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -219,7 +227,10 @@ public class OAuthController {
         return new RedirectView(authUrl);
     }
 
-    // to randomly generate state parameter for OAuth2
+    /**
+     * Generates a secure random state string for CSRF protection.
+     * @return a secure random state string
+     */
     private String generateState() {
         SecureRandom random = new SecureRandom();
         byte[] stateBytes = new byte[32]; // 256 bits of entropy
@@ -228,7 +239,14 @@ public class OAuthController {
     }
     
     /**
-     * 
+     * Handles the OAuth2 callback from the provider. It
+     * handles code exchange validation (CSRF protection) and user info retrieval.
+     * It also handles tokenization and redirection based on platform.
+     * @param provider the OAuth2 provider (e.g., "github", "google")
+     * @param code the authorization code returned by the provider to get access token for user info
+     * @param state the state parameter returned by the provider
+     * @param session the HTTP session to retrieve stored state information
+     * @return RedirectView or JSON response with JWT token and user info
      */
     @GetMapping("/{provider}/callback")
     public Object oauthCallback(@PathVariable String provider,
@@ -400,6 +418,16 @@ public class OAuthController {
         }
     }
 
+    /**
+     * Exchanges the authorization code for access token with the OAuth2 provider 
+     * and returns the token response as a map to use for user info retrieval.
+     * @param provider the OAuth2 provider (e.g., "github", "google")
+     * @param code the authorization code received from the provider
+     * @param redirectUri the redirect URI used in the authorization request
+     * @param clientId the OAuth2 client ID
+     * @param clientSecret the OAuth2 client secret
+     * @return a map containing the token response data
+     */
     private Map<String, String> exchangeCodeForToken(String provider, String code, String redirectUri, String clientId, String clientSecret) {
         // Determine token endpoint URL
         String tokenUrl;
@@ -421,16 +449,7 @@ public class OAuthController {
         requestBody.add("code", code);
         requestBody.add("redirect_uri", redirectUri);
         requestBody.add("client_id", clientId);
-        
-        // Add client_secret only if present (not needed for PKCE flows)
-        if (clientSecret != null && !clientSecret.isEmpty()) {
-            requestBody.add("client_secret", clientSecret);
-        }
-        
-        // Add code_verifier for PKCE flows
-        // if (codeVerifier != null && !codeVerifier.isEmpty()) {
-        //     requestBody.add("code_verifier", codeVerifier);
-        // }
+        requestBody.add("client_secret", clientSecret);
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
 
@@ -456,6 +475,12 @@ public class OAuthController {
         return tokenData;
     }
 
+    /**
+     * Parses a form-urlencoded token response from the OAuth2 provider and 
+     * sets the values into a map. This is used for GitHub token responses.
+     * @param responseBody the raw response body from the token endpoint
+     * @return a map containing the token response data
+     */
     private Map<String, String> parseFormEncoded(String responseBody) {
         Map<String, String> result = new HashMap<>();
         
@@ -484,6 +509,12 @@ public class OAuthController {
         return result;
     }
 
+    /**
+     * Parses a JSON token response from the OAuth2 provider and 
+     * sets the values into a map. This is used for Google token responses.
+     * @param responseBody the raw response body from the token endpoint
+     * @return a map containing the token response data
+     */
     private Map<String, String> parseJsonTokenResponse(String responseBody) {
         Map<String, String> result = new HashMap<>();
         
@@ -523,6 +554,12 @@ public class OAuthController {
         return result;
     }
 
+    /**
+     * Fetches user information from the OAuth2 provider using the access token.
+     * @param provider the OAuth2 provider (e.g., "github", "google")
+     * @param accessToken the access token to authorize the request
+     * @return a map containing the user information
+     */
     private Map<String, Object> fetchUserInfo(String provider, String accessToken) {
         ObjectMapper objectMapper = new ObjectMapper();
         String userInfoUrl;
@@ -570,13 +607,20 @@ public class OAuthController {
         return userInfo;
     }
 
+    /**
+     * Builds a deep link URL for Android redirection with JWT token and user data.
+     * @param jwtToken the JWT token
+     * @param userData the user data map
+     * @return the deep link URL
+     */
     private String buildDeepLinkUrl(String jwtToken, Map<String, Object> userData) {
         // Use your Android app's deep link scheme
         String baseUrl = "umastagram://auth/callback";
-        String queryParams = buildFragmentData(jwtToken, userData);
+        String queryParams = buildFragmentData(jwtToken, userData); // builds token and user info as query params
         return baseUrl + "?" + queryParams;
     }
 
+    @Deprecated    
     private String buildDeepLinkUrlForCode(String code, String state) {
         // Use your Android app's deep link scheme for Google Android (PKCE flow)
         String baseUrl = "umastagram://auth/callback";
@@ -586,11 +630,23 @@ public class OAuthController {
         return baseUrl + "?" + queryParams;
     }
 
+    /**
+     * Builds a web redirect URL with JWT token and user data in the fragment.
+     * @param jwtToken the JWT token
+     * @param userData the user data map
+     * @return the web redirect URL
+     */
     private String buildWebRedirectUrl(String jwtToken, Map<String, Object> userData) {
         String fragment = buildFragmentData(jwtToken, userData);
         return webSuccessRedirectUrl + "#" + fragment;
     }
 
+    /**
+     * Builds fragment data string with JWT token and user info for URL redirection.
+     * @param jwtToken the JWT token
+     * @param userData the user data map
+     * @return the fragment data string
+     */
     private String buildFragmentData(String jwtToken, Map<String, Object> userData) {
         @SuppressWarnings("unchecked")
         Map<String, Object> user = (Map<String, Object>) userData.get("user");
@@ -602,6 +658,12 @@ public class OAuthController {
             "&provider=" + URLEncoder.encode((String)user.get("provider"), StandardCharsets.UTF_8);
     }
 
+    /**
+     * Generates a JWT token for the authenticated user. Token
+     * has expiration and includes user claims.
+     * @param user the authenticated user
+     * @return the generated JWT token
+     */
     public String generateJwtToken(User user){
         // Step 1: Set expiration time (e.g., 24 hours)
         long expirationTime = 86400000; // 24 hours in milliseconds
@@ -622,6 +684,12 @@ public class OAuthController {
                 .compact();                                 // Build the final token
     }
 
+    /**
+     * Fetches redirect URI and client details based on provider and platform.
+     * @param provider the OAuth2 provider (e.g., "github", "google")
+     * @param platform the platform (e.g., "android", "web")
+     * @return a map containing redirectUri, clientId, and clientSecret
+     */
     private Map<String,String> getRedirectUriAndClientDetails(String provider, String platform) {
         Map<String, String> details = new HashMap<>();
         if (platform.equals("android")) {
@@ -655,6 +723,12 @@ public class OAuthController {
         return details;
     }
 
+    /**
+     * Handles validation errors by cleaning up state and redirecting to an error page.
+     * @param message the error message
+     * @param session the HTTP session
+     * @return RedirectView to the error page
+     */
     private RedirectView handleValidationError(String message, HttpSession session) {
         // Clean up state from store and session
         String state = (String) session.getAttribute("oauth_state");
