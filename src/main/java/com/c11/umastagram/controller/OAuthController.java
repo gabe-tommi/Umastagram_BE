@@ -673,7 +673,7 @@ public class OAuthController {
         Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         
         // Step 3: Build and sign the JWT
-        return Jwts.builder()
+        return Jwts.builder() 
                 .setSubject(user.getUserId().toString())  // User ID as subject
                 .claim("email", user.getEmail())     // Additional claims
                 .claim("username", user.getUsername())

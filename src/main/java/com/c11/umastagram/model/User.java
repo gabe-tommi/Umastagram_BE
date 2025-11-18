@@ -23,7 +23,7 @@ public class User {
     @Column(nullable = true, length = 255)
     private String provider;
 
-    @Column(nullable = true, length = 255)
+    @Column(unique = true, nullable = true, length = 255)
     private String googleId;
 
     @Column(nullable = true, length = 255)

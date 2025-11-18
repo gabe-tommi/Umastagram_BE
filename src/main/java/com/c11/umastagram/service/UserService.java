@@ -58,10 +58,10 @@ public class UserService {
         if (username == null || username.isEmpty()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        // Allow null password for OAuth users
-        // if (password == null || password.isEmpty()) {
-        //     throw new IllegalArgumentException("Password cannot be null or empty");
-        // }
+        // Allow null password for OAuth users, but require it for non-OAuth users
+        if (provider == null && (password == null || password.isEmpty())) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
 
         // Add validation, e.g., check if email is unique
         if (user.getUserId() != null && userRepository.getUserByUserId(user.getUserId()).isPresent()) {
@@ -69,6 +69,9 @@ public class UserService {
         }
         if (userRepository.getUserByEmail(email) != null && userRepository.getUserByEmail(email).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
+        }
+        if (userRepository.getUserByUsername(username) != null && userRepository.getUserByUsername(username).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
         }
         if(provider != null && provider.equals("github")) {
             if (githubId != null && !githubId.isEmpty() && userRepository.getUserByGitHubId(githubId).isPresent()) {
@@ -117,6 +120,16 @@ public class UserService {
     public Optional<User> findUserByEmail(String email) {
         return userRepository.getUserByEmail(email.trim().toLowerCase())
                 .filter(user -> user != null && !user.getEmail().isEmpty());
+    }
+
+    /**
+     * Finds a user by their username.
+     * @param username The username of the user
+     * @return An Optional containing the user if found, or empty if not
+     */
+    public Optional<User> findUserByUsername(String username) {
+        return userRepository.getUserByUsername(username.trim())
+                .filter(user -> user != null && !user.getUsername().isEmpty());
     }
 
     /**
