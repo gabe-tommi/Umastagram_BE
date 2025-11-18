@@ -1,9 +1,6 @@
 package com.c11.umastagram.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -16,6 +13,8 @@ import java.util.Objects;
 // (User 1 might follow User 2, but User 2 might not follow User 1 back)
 // In this case, only one record would exist: (User 1, User 2)
 
+@Entity
+@Table(name = "follow")
 public class Follow {
     // Ignore warnings about multiple @Id annotations for this class
     // This is intentional to create a composite primary key
