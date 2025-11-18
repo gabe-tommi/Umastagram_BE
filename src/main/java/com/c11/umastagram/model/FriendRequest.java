@@ -5,18 +5,14 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "friend_request")
+@IdClass(FriendRequestId.class)
 public class FriendRequest {
-    // Ignore warnings about multiple @Id annotations for this class
-    // This is intentional to create a composite primary key
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private Long userRequestId;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private Long userTargetId;
 
     private LocalDateTime requestTime;

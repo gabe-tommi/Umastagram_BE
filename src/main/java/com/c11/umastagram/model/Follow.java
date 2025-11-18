@@ -5,28 +5,16 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-// Stores accepted followings between users
-// Each record represents a user following another user
-// The structure of this class is not to store the status of a follow request,
-// (For that see the FriendRequest class)
-// but individual instances of accepted follows
-// (User 1 might follow User 2, but User 2 might not follow User 1 back)
-// In this case, only one record would exist: (User 1, User 2)
-
 @Entity
 @Table(name = "follow")
+@IdClass(FollowId.class)
 public class Follow {
-    // Ignore warnings about multiple @Id annotations for this class
-    // This is intentional to create a composite primary key
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private Long userId;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private Long friendId;
 
     private LocalDateTime requestTime;

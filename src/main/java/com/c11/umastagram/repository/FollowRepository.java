@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Repository
@@ -29,6 +30,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
      * @return Optional<Follow>
      */
     @Modifying
+    @Transactional
     @Query("DELETE FROM Follow f WHERE f.userId = :userId AND f.friendId = :friendId")
-    Optional<Follow> deleteFollow(Long userRequestId, Long userTargetId);
+    Optional<Follow> deleteFollow(Long userId, Long friendId);
 }
