@@ -3,6 +3,9 @@ package com.c11.umastagram.model;
 import java.io.Serializable;
 import java.util.Objects;
 
+// This class represents a composite key for the Follow entity
+// consisting of userId and friendId.
+
 public class FollowId implements Serializable {
     private Long userId;
     private Long friendId;

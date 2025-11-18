@@ -19,7 +19,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
      * @return Optional<Follow> containing the Follow if found, or empty otherwise
      */
     @Query("SELECT f FROM Follow f WHERE f.userId = :userId AND f.friendId = :friendId")
-    Optional<Follow> getFolliow(Long userId, Long friendId);
+    Optional<Follow> getFollow(Long userId, Long friendId);
 
     
     /**

@@ -18,7 +18,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
      * @return Optional<FriendRequest> containing the FriendRequest if found, or empty otherwise
      */
     @Query("SELECT fr FROM FriendRequest fr WHERE fr.userRequestId = :userRequestId AND fr.userTargetId = :userTargetId")
-    Optional<FriendRequest> getFriendRequestByUserRequestIdAndUserTargetId(Long userRequestId, Long userTargetId);
+    Optional<FriendRequest> getFriendRequest(Long userRequestId, Long userTargetId);
 
     /**
      * Deletes a FriendRequest by userRequestId and userTargetId.

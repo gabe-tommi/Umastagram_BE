@@ -3,6 +3,9 @@ package com.c11.umastagram.model;
 import java.io.Serializable;
 import java.util.Objects;
 
+// This class represents a composite key for the FriendRequest entity
+// consisting of userRequestId and userTargetId.
+
 public class FriendRequestId implements Serializable {
     private Long userRequestId;
     private Long userTargetId;
