@@ -39,7 +39,7 @@ public class UserServiceTest {
 
     @Test
     public void testSaveUser(){
-        User user = new User(null, null, "testuser", "test@example.com", "password123");
+        User user = new User(null, null, null, "testuser", "test@example.com", "password123");
         User savedUser = userService.saveUser(user);
         assertNotNull(savedUser.getUserId());
 
@@ -58,7 +58,13 @@ public class UserServiceTest {
         } catch (IllegalArgumentException e) {
             assertEquals("Email already exists", e.getMessage());
         }
-        fetchedUser.setEmail("newemail@example.com"); // Reset email to test password duplication
+        fetchedUser.setEmail("newemail@example.com"); // Change email to test username duplication
+        try {
+            userService.saveUser(fetchedUser);
+        } catch (IllegalArgumentException e) {
+            assertEquals("Username already exists", e.getMessage());
+        }
+        fetchedUser.setUsername("newusername"); // Change username to test password validation
         fetchedUser.setPassword("");
         try {
             userService.saveUser(fetchedUser);
@@ -97,21 +103,19 @@ public class UserServiceTest {
         enum UserPath{ // im so smart
             EMAIL_NOT_NULL,
             USERNAME_NOT_NULL,
-            PASSWORD_NOT_NULL,
             EMAIL_NOT_EMPTY,
             USERNAME_NOT_EMPTY,
-            PASSWORD_NOT_EMPTY,
             EMAIL_EXISTS,
             GITHUB_USER_ID_EXISTS,
             GITHUB_USERNAME_EXISTS
-        } // enum to manage test paths for checks in saving a user with GitHub info
+        } // enum to manage test paths for checks in saving a user with GitHub info (OAuth users don't need password validation)
 
-        User user = new User("1010", "githubUser1010", "githubuser", "githubuser@example.com", "password123");
+        User user = new User("github", "1010", "githubUser1010", "githubuser", "githubuser@example.com", "password123");
         User savedUser = userService.saveUser(user);
         assertNotNull(savedUser.getUserId());
         assertEquals("githubUser1010", savedUser.getGithubUsername());
 
-        User compUser = new User("1010", "anotherGitHubUser", "compuser", "compuser@example.com", "password123");
+        User compUser = new User("github", "9999", "anotherGitHubUser", "compuser", "compuser@example.com", "password123");
         for(UserPath path : UserPath.values()){
             try {
                 switch(path){
@@ -121,17 +125,11 @@ public class UserServiceTest {
                     case USERNAME_NOT_NULL:
                         compUser.setUsername(null);
                         break;
-                    case PASSWORD_NOT_NULL:
-                        compUser.setPassword(null);
-                        break;
                     case EMAIL_NOT_EMPTY:
                         compUser.setEmail("");
                         break;
                     case USERNAME_NOT_EMPTY:
                         compUser.setUsername("");
-                        break;
-                    case PASSWORD_NOT_EMPTY:
-                        compUser.setPassword("");
                         break;
                     case GITHUB_USER_ID_EXISTS:
                         compUser.setGithubId("1010");
@@ -161,10 +159,6 @@ public class UserServiceTest {
                         assertEquals("Username cannot be null or empty", e.getMessage());
                         compUser.setUsername("compuser");
                         break;
-                    case PASSWORD_NOT_NULL:
-                        assertEquals("Password cannot be null or empty", e.getMessage());
-                        compUser.setPassword("password123");
-                        break;
                     case EMAIL_NOT_EMPTY:
                         assertEquals("Email cannot be null or empty", e.getMessage());
                         compUser.setEmail("compuser@example.com");
@@ -172,10 +166,6 @@ public class UserServiceTest {
                     case USERNAME_NOT_EMPTY:
                         assertEquals("Username cannot be null or empty", e.getMessage());
                         compUser.setUsername("compuser");
-                        break;
-                    case PASSWORD_NOT_EMPTY:
-                        assertEquals("Password cannot be null or empty", e.getMessage());
-                        compUser.setPassword("password123");
                         break;
                     case GITHUB_USER_ID_EXISTS:
                         assertEquals("GitHub ID already exists", e.getMessage());
