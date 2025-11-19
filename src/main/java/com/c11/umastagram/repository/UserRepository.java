@@ -133,6 +133,26 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> getUserByGitHubUsername(@Param("githubUsername") String githubUsername);
 
     /**
+     * Retrieves a user by their Google ID.
+     * JPQL: SELECT u FROM User u WHERE u.googleId = :googleId
+     *
+     * @param googleId the Google ID of the user to retrieve
+     * @return Optional<User> containing the user if found, or empty otherwise
+     */    
+    @Query("SELECT u FROM User u WHERE u.googleId = :googleId")
+    Optional<User> getUserByGoogleId(@Param("googleId") String googleId);
+
+    /**
+     * Retrieves a user by their Google username.
+     * JPQL: SELECT u FROM User u WHERE u.googleUsername = :googleUsername
+     *
+     * @param googleUsername the Google username of the user to retrieve
+     * @return Optional<User> containing the user if found, or empty otherwise
+     */
+    @Query("SELECT u FROM User u WHERE u.googleUsername = :googleUsername")
+    Optional<User> getUserByGoogleUsername(@Param("googleUsername") String googleUsername);
+
+    /**
      * Sets the email of a user by their userId.
      * JPQL: UPDATE User u SET u.email = :email WHERE u.userId = :userId
      * @param email the new email to set
@@ -196,4 +216,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT u FROM User u WHERE u.username = :username")
     Optional<User> getUserByUsername(@Param("username") String username);
+
+    /**
+     * Finds a user by their provider and provider ID (GitHub or Google).
+     * @param provider The OAuth provider (e.g., "github", "google")
+     * @param providerId The provider-specific user ID
+     * @return Optional<User> containing the user if found, or empty otherwise
+     */
+    @Query("SELECT u FROM User u WHERE u.provider = :provider AND (u.googleId = :providerId OR u.githubId = :providerId)")
+    Optional<User> findByProviderAndProviderId(@Param("provider") String provider, @Param("providerId") String providerId);
 }
