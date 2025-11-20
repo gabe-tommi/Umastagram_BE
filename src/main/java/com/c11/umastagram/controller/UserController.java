@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.c11.umastagram.dto.LoginRequest;
+import java.util.Optional;
+import com.c11.umastagram.util.JwtUtil;
 
 import java.util.Map;
 
@@ -23,6 +26,9 @@ public class UserController {
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     // Define user-related endpoints here
     @PostMapping("/signup")
@@ -49,11 +55,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try{
-            String username = loginRequest.get("username");
-            String password = loginRequest.get("password");
-
+            String username = loginRequest.getUsername();
+            String password = loginRequest.getPassword();
+    
             if (username == null || password == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username and password are required"));
             }
@@ -64,8 +70,16 @@ public class UserController {
             if (user == null || !user.getPassword().equals(password)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
             }
-
-            return ResponseEntity.ok(Map.of("message", "Login successful for user: " + username));
+            Long userId = user.getUserId();
+            String email = user.getEmail();
+            String token = jwtUtil.generateToken(user.getUserId(), user.getUsername());
+            return ResponseEntity.ok(Map.of(
+                "message", "Login successful for user: " + username,
+                "userId", user.getUserId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "token", token
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred during login"));
         }
