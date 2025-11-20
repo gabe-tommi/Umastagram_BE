@@ -48,4 +48,26 @@ public class UserController {
         }
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+        try{
+            String username = loginRequest.get("username");
+            String password = loginRequest.get("password");
+
+            if (username == null || password == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Username and password are required"));
+            }
+
+            // Implement login logic here (e.g., verify credentials, generate token, etc.)
+            
+            User user = userService.findByUsername(username);
+            if (user == null || !user.getPassword().equals(password)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
+            }
+
+            return ResponseEntity.ok(Map.of("message", "Login successful for user: " + username));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred during login"));
+        }
+    }
 }
