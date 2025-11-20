@@ -60,7 +60,7 @@ public class UserController {
 
             // Implement login logic here (e.g., verify credentials, generate token, etc.)
             
-            User user = userService.findByUsername(username);
+            User user = userService.findUserByUsername(username).get();
             if (user == null || !user.getPassword().equals(password)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
             }
