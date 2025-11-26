@@ -91,8 +91,17 @@ public class UserController {
             String token = request.get("token");
             String newUsername = request.get("newUsername");
 
-            if (token == null || newUsername == null || newUsername.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Token and new username are required"));
+            if (token == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Token is required"));
+            }
+            if (token.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Token cannot be empty"));
+            }
+            if (newUsername == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "New username is required"));
+            }
+            if (newUsername.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "New username cannot be empty"));
             }
 
             Long userId = jwtUtil.getUserIdFromToken(token);
@@ -112,7 +121,8 @@ public class UserController {
                 "email", user.getEmail()
             ));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred while changing username"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred while changing username",
+                "details", e.getMessage()));
         }
     }
 }
