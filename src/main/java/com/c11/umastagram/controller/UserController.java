@@ -112,7 +112,7 @@ public class UserController {
 
             User user = userOpt.get();
             user.setUsername(newUsername.trim());
-            userService.saveUser(user);
+            userService.setUsername(user, newUsername.trim());
 
             return ResponseEntity.ok(Map.of(
                 "message", "Username changed successfully",
