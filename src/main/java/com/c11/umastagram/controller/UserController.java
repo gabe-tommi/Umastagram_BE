@@ -84,6 +84,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred during login"));
         }
     }
+<<<<<<< HEAD
 
     @PostMapping("/username/change")
     public ResponseEntity<?> changeUsername(@RequestBody Map<String, String> request) {
@@ -125,4 +126,6 @@ public class UserController {
                 "details", e.getMessage()));
         }
     }
+=======
+>>>>>>> main
 }
