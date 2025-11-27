@@ -84,4 +84,45 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred during login"));
         }
     }
+
+    @PostMapping("/username/change")
+    public ResponseEntity<?> changeUsername(@RequestBody Map<String, String> request) {
+        try {
+            String token = request.get("token");
+            String newUsername = request.get("newUsername");
+
+            if (token == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Token is required"));
+            }
+            if (token.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Token cannot be empty"));
+            }
+            if (newUsername == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "New username is required"));
+            }
+            if (newUsername.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "New username cannot be empty"));
+            }
+
+            Long userId = jwtUtil.getUserIdFromToken(token);
+            Optional<User> userOpt = userService.findUserById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid token or user not found"));
+            }
+
+            User user = userOpt.get();
+            user.setUsername(newUsername.trim());
+            userService.setUsername(user, newUsername.trim());
+
+            return ResponseEntity.ok(Map.of(
+                "message", "Username changed successfully",
+                "userId", user.getUserId(),
+                "username", user.getUsername(),
+                "email", user.getEmail()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred while changing username",
+                "details", e.getMessage()));
+        }
+    }
 }
