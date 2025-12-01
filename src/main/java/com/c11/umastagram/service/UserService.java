@@ -196,4 +196,12 @@ public class UserService {
         }
         return Optional.empty();
     }
+
+    public void setUsername(User user, String newUsername) {
+        if(userRepository.getUserByUsername(newUsername).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        user.setUsername(newUsername);
+        userRepository.save(user);
+    }
 }
