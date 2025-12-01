@@ -16,7 +16,21 @@ import java.util.List;
 @RequestMapping("/api/friends")
 public class FollowController {
     @GetMapping("/getUserFollowers/{userId}")
-    public List<String> getFollowersbyUserId() {
-
+    public List<String> getUserFollowers(Long userId) {
+        return followService.getUserFollowers(userId);
     }
+
+    @GetMapping("/sendFriendRequest/{userId}/{friendId}")
+    public FriendRequest sendFriendRequest(Long userId, Long friendId) {
+        FriendRequest fr = new FriendRequest(userId, friendId);
+        return friendRequestService.saveFriendRequest(fr);
+    }
+
+    @GetMapping("/acceptFriendRequest/{userId}/{friendId}")
+    public Follow acceptFriendRequest(Long userId, Long friendId) {
+        // delete the friend request
+        friendRequestService.deleteFriendRequest(userId, friendId);
+        // create the follow record
+        Follow follow = new Follow(userId, friendId);
+        return followService.saveFollow(follow);
 }
