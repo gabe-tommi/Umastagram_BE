@@ -1,6 +1,7 @@
 package com.c11.umastagram.controller;
 
 import com.c11.umastagram.service.FriendRequestService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,7 +19,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/friends")
 public class FollowController {
+    @Autowired
     private final FriendRequestService friendRequestService;
+    @Autowired
     private final FollowService followService;
 
     public FollowController(FriendRequestService friendRequestService, FollowService followService) {
@@ -28,7 +31,6 @@ public class FollowController {
 
     @GetMapping("/getUserFollowers/{userId}")
     public List<String> getUserFollowers(@PathVariable Long userId) {
-        FollowService followService = new FollowService();
         return followService.getUserFollowers(userId);
     }
 

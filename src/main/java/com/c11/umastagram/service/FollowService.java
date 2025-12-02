@@ -37,13 +37,12 @@ public class FollowService {
         List<Follow> followers = followRepository.findAllFollowersByUserId(userId);
         List<String> followerNames = new ArrayList<>();
         UserService userService = new UserService();
-        for(int i = 0; i < followers.size(); i++) {
-            Long currentId = followers.get(i).getUserId();
+        for (Follow follower : followers) {
+            Long currentId = follower.getUserId();
             Optional<User> currentUser = userService.findUserById(currentId);
-            if(currentUser.isPresent()){
+            if (currentUser.isPresent()) {
                 followerNames.add(currentUser.get().getUsername());
-            }
-            else{
+            } else {
                 throw new IllegalArgumentException("User Not Found, getUserFollowers FAIL");
             }
         }
