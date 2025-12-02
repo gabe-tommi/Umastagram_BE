@@ -8,6 +8,7 @@ import com.c11.umastagram.model.User;
 import com.c11.umastagram.service.UserService;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 public class FollowService {
@@ -35,10 +36,17 @@ public class FollowService {
     public List<String> getUserFollowers(Long userId) {
         List<Follow> followers = followRepository.findAllFollowersByUserId(userId);
         List<String> followerNames = new ArrayList<>();
+        UserService userService = new UserService();
         for(int i = 0; i < followers.size(); i++) {
-            UserService.getUserById(followers.get(i).getUserId()).ifPresent(user -> {
-                followerNames.add(user.getUsername());
-            });
+            Long currentId = followers.get(i).getUserId();
+            Optional<User> currentUser = userService.findUserById(currentId);
+            if(currentUser.isPresent()){
+                followerNames.add(currentUser.get().getUsername());
+            }
+            else{
+                throw new IllegalArgumentException("User Not Found, getUserFollowers FAIL");
+            }
         }
+        return followerNames;
     }
 }
