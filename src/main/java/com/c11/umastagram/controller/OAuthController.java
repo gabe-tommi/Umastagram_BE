@@ -110,7 +110,7 @@ public class OAuthController {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.web.success-redirect-url:https://feuma-b63c05ecb1df.herokuapp.com/tabs/posts}")
+    @Value("${app.web.success-redirect-url:https://feuma-b63c05ecb1df.herokuapp.com/tabs/account}")
     private String webSuccessRedirectUrl;
 
     
