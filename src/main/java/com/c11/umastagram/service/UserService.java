@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -32,11 +33,14 @@ public class UserService {
     public User saveUser(User user) {
         
         // check for invalid user field entries (MUST HAVE EMAIL, USERNAME, PASSWORD)
-        String email = user.getEmail() == null ? null : user.getEmail().trim().toLowerCase();
-        String username = user.getUsername() == null ? null : user.getUsername().trim();
-        String password = user.getPassword() == null ? null : user.getPassword().trim();
-        String githubId = user.getGithubId() == null ? null : user.getGithubId().trim();
-        String githubUsername = user.getGithubUsername() == null ? null : user.getGithubUsername().trim();
+        String email = user.getEmail() == null || user.getEmail().isEmpty() ? null : user.getEmail().trim().toLowerCase();
+        String username = user.getUsername() == null|| user.getUsername().isEmpty() ? null : user.getUsername().trim();
+        String password = user.getPassword() == null || user.getPassword().isEmpty() ? null : user.getPassword().trim();
+        String githubId = user.getGithubId() == null || user.getGithubId().isEmpty() ? null : user.getGithubId().trim();
+        String githubUsername = user.getGithubUsername() == null || user.getGithubUsername().isEmpty() ? null : user.getGithubUsername().trim();
+        String googleId = user.getGoogleId() == null || user.getGoogleId().isEmpty() ? null : user.getGoogleId().trim();
+        String googleUsername = user.getGoogleUsername() == null || user.getGoogleUsername().isEmpty() ? null : user.getGoogleUsername().trim();
+        String provider = user.getProvider() == null || user.getProvider().isEmpty() ? null : user.getProvider().trim();
 
         // persist trimmed values back to user
         user.setEmail(email);
@@ -44,6 +48,9 @@ public class UserService {
         user.setPassword(password);
         user.setGithubId(githubId);
         user.setGithubUsername(githubUsername);
+        user.setGoogleId(googleId);
+        user.setGoogleUsername(googleUsername);
+        user.setProvider(provider);
 
         if (email == null || email.isEmpty()) {
             throw new IllegalArgumentException("Email cannot be null or empty");
@@ -51,7 +58,8 @@ public class UserService {
         if (username == null || username.isEmpty()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        if (password == null || password.isEmpty()) {
+        // Allow null password for OAuth users, but require it for non-OAuth users
+        if (provider == null && (password == null || password.isEmpty())) {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
 
@@ -59,14 +67,26 @@ public class UserService {
         if (user.getUserId() != null && userRepository.getUserByUserId(user.getUserId()).isPresent()) {
             throw new IllegalArgumentException("User ID already exists");
         }
-        if (userRepository.getUserByEmail(email).isPresent()) {
+        if (userRepository.getUserByEmail(email) != null && userRepository.getUserByEmail(email).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
-        if (githubId != null && !githubId.isEmpty() && userRepository.getUserByGitHubId(githubId).isPresent()) {
-            throw new IllegalArgumentException("GitHub ID already exists");
+        if (userRepository.getUserByUsername(username) != null && userRepository.getUserByUsername(username).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
         }
-        if (githubUsername != null && !githubUsername.isEmpty() && userRepository.getUserByGitHubUsername(githubUsername).isPresent()) {
-            throw new IllegalArgumentException("GitHub Username already exists");
+        if(provider != null && provider.equals("github")) {
+            if (githubId != null && !githubId.isEmpty() && userRepository.getUserByGitHubId(githubId).isPresent()) {
+                throw new IllegalArgumentException("GitHub ID already exists");
+            }
+            if (githubUsername != null && !githubUsername.isEmpty() && userRepository.getUserByGitHubUsername(githubUsername).isPresent()) {
+                throw new IllegalArgumentException("GitHub Username already exists");
+            }
+        } else if(provider != null && provider.equals("google")) {
+            if (googleId != null && !googleId.isEmpty() && userRepository.getUserByGoogleId(googleId).isPresent()) {
+                throw new IllegalArgumentException("Google ID already exists");
+            }
+            if (googleUsername != null && !googleUsername.isEmpty() && userRepository.getUserByGoogleUsername(googleUsername).isPresent()) {
+                throw new IllegalArgumentException("Google Username already exists");
+            }
         }
 
         // Hash password if needed (use BCrypt)
@@ -103,6 +123,16 @@ public class UserService {
     }
 
     /**
+     * Finds a user by their username.
+     * @param username The username of the user
+     * @return An Optional containing the user if found, or empty if not
+     */
+    public Optional<User> findUserByUsername(String username) {
+        return userRepository.getUserByUsername(username.trim())
+                .filter(user -> user != null && !user.getUsername().isEmpty());
+    }
+
+    /**
      * Deletes a user.
      * @param user The user to delete
      */
@@ -117,14 +147,61 @@ public class UserService {
     }
 
     /**
-     * Finds a user by their username.
-     * @param username The username of the user
-     * @return An Optional containing the user if found, or empty if not
+     * Creates or updates an OAuth user. For OAuth users, password is not required.
+     * If user exists by provider + providerId, updates their info. Otherwise creates new user.
+     * @param provider The OAuth provider (github/google)
+     * @param userInfo Map containing user info from OAuth provider
+     * @return The created or updated user
      */
-    public Optional<User> findUserByUsername(String username) {
-        return userRepository.getUserByUsername(username.trim())
-                .filter(user -> user != null && !user.getUsername().isEmpty());
+    public User createOrUpdateOAuthUser(String provider, Map<String, Object> userInfo) {
+        String providerId = (String) userInfo.get("id");
+        
+        // Try to find existing user by provider + providerId
+        Optional<User> existingUser = findByProviderAndProviderId(provider, providerId);
+        
+        User user;
+        if (existingUser.isPresent()) {
+            // Update existing user
+            user = existingUser.get();
+            user.setEmail((String) userInfo.get("email"));
+            user.setLastLogin(java.time.LocalDateTime.now());
+            // Could update avatar_url if needed
+        } else {
+            // Create new OAuth user
+            user = new User(
+                provider,
+                providerId,
+                (String) userInfo.get("username"), // provider username
+                (String) userInfo.get("username"), // app username (same for OAuth)
+                (String) userInfo.get("email"),
+                null // no password for OAuth users
+            );
+            user.setLastLogin(java.time.LocalDateTime.now());
+        }
+        
+        return userRepository.save(user);
+    }
+    
+    /**
+     * Finds a user by provider and provider ID.
+     * @param provider The OAuth provider
+     * @param providerId The ID from the OAuth provider
+     * @return Optional containing the user if found
+     */
+    private Optional<User> findByProviderAndProviderId(String provider, String providerId) {
+        if ("github".equals(provider)) {
+            return userRepository.getUserByGitHubId(providerId);
+        } else if ("google".equals(provider)) {
+            return userRepository.getUserByGoogleId(providerId);
+        }
+        return Optional.empty();
     }
 
-    
+    public void setUsername(User user, String newUsername) {
+        if(userRepository.getUserByUsername(newUsername).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        user.setUsername(newUsername);
+        userRepository.save(user);
+    }
 }

@@ -25,5 +25,5 @@ import java.util.List;
  */
 @Repository
 public interface PostsRepository extends JpaRepository<Posts, Long> {
-    List<Posts> findByUserId(String userId);
+    List<Posts> findByUserId(Long userId);
 }
