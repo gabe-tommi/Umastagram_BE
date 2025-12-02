@@ -15,12 +15,10 @@ public class FollowService {
     @Autowired
     private FollowRepository followRepository;
 
-    public Follow saveFollow(Follow follow) {
-        // no data formatting is really necessary here,
-        // all this table stores are ids and a timestamp
-        // and the ids in the composite key can be duplicates
-        // only the combination has to be unique
+    @Autowired
+    private UserService userService;
 
+    public Follow saveFollow(Follow follow) {
         if (follow.getUserId() != null &&
                 follow.getFriendId() != null &&
                 followRepository.getFollow(follow.getUserId(), follow.getFriendId()).isPresent()){
@@ -36,7 +34,7 @@ public class FollowService {
     public List<String> getUserFollowers(Long userId) {
         List<Follow> followers = followRepository.findAllFollowersByUserId(userId);
         List<String> followerNames = new ArrayList<>();
-        UserService userService = new UserService();
+
         for (Follow follower : followers) {
             Long currentId = follower.getUserId();
             Optional<User> currentUser = userService.findUserById(currentId);
