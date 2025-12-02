@@ -1,3 +1,4 @@
+// language: java
 package com.c11.umastagram.service;
 
 import com.c11.umastagram.model.FriendRequest;
@@ -51,7 +52,7 @@ public class FriendRequestServiceTest {
 
     @Test
     public void deleteFriendRequest_invokesRepository() {
-        doNothing().when(friendRequestRepository).deleteFriendRequest(1L, 2L);
+        when(friendRequestRepository.deleteFriendRequest(1L, 2L)).thenReturn(1);
 
         friendRequestService.deleteFriendRequest(1L, 2L);
 

@@ -50,7 +50,7 @@ public class FollowServiceTest {
 
     @Test
     public void deleteFollow_invokesRepository() {
-        doNothing().when(followRepository).deleteFollow(1L, 2L);
+        when(followRepository.deleteFollow(1L, 2L)).thenReturn(1);
 
         followService.deleteFollow(1L, 2L);
 

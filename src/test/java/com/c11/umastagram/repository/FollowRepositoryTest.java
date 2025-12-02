@@ -3,8 +3,8 @@ package com.c11.umastagram.repository;
 import com.c11.umastagram.model.Follow;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,8 +45,12 @@ public class FollowRepositoryTest {
 
         entityManager.persistAndFlush(f);
 
-        followRepository.deleteFollow(30L, 40L);
+        int deleted = followRepository.deleteFollow(30L, 40L);
+
         entityManager.flush();
+        entityManager.clear();
+
+        assertEquals(1, deleted, "Repository should report 1 row deleted");
 
         Optional<Follow> after = followRepository.getFollow(30L, 40L);
         assertFalse(after.isPresent(), "Follow should be deleted by repository method");

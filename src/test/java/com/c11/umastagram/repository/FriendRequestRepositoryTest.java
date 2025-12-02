@@ -1,11 +1,11 @@
-// src/test/java/com/c11/umastagram/repository/FriendRequestRepositoryTest.java
+// language: java
 package com.c11.umastagram.repository;
 
 import com.c11.umastagram.model.FriendRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +45,14 @@ public class FriendRequestRepositoryTest {
 
         entityManager.persistAndFlush(fr);
 
-        // call the repository method that performs JPQL DELETE
-        friendRequestRepository.deleteFriendRequest(300L, 400L);
+        int deleted = friendRequestRepository.deleteFriendRequest(300L, 400L);
 
-        // flush to ensure query executed; then verify no entity remains
+        // ensure the delete is executed and we don't read a cached entity
         entityManager.flush();
+        entityManager.clear();
+
+        assertEquals(1, deleted, "Repository should report 1 row deleted");
+
         Optional<FriendRequest> after = friendRequestRepository.getFriendRequest(300L, 400L);
         assertFalse(after.isPresent(), "FriendRequest should be deleted by repository method");
     }

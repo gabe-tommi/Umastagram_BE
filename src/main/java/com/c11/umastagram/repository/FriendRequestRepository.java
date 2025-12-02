@@ -25,8 +25,9 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
      * JPQL: DELETE FROM FriendRequest fr WHERE fr.userRequestId = :userRequestId AND fr.userTargetId = :userTargetId
      * @param userRequestId the ID of the user who sent the request
      * @param userTargetId the ID of the user who received the request
+     * @return int number of rows affected
      */
     @Modifying
     @Query("DELETE FROM FriendRequest fr WHERE fr.userRequestId = :userRequestId AND fr.userTargetId = :userTargetId")
-    Optional<FriendRequest> deleteFriendRequest(Long userRequestId, Long userTargetId);
+    int deleteFriendRequest(Long userRequestId, Long userTargetId);
 }
