@@ -7,7 +7,6 @@ package com.c11.umastagram.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import com.c11.umastagram.model.Horse;
 
 
 import java.time.LocalDate;
@@ -19,13 +18,13 @@ public class HorseTest {
     void testHorseConstructorAndGetters() {
         LocalDate birthday = LocalDate.of(2015, 3, 10);
         LocalDate deathday = LocalDate.of(2023, 7, 20);
-        Horse horse = new Horse("Spirit", "http://horse.link", birthday, deathday, "Mustang");
+        Horse horse = new Horse("Spirit", "http://horse.link", birthday, deathday);
 
         assertEquals("Spirit", horse.getHorseName());
         assertEquals("http://horse.link", horse.getHorseImageLink());
         assertEquals(birthday, horse.getHorseBirthday());
         assertEquals(deathday, horse.getHorseDeathday());
-        assertEquals("Mustang", horse.getHorseBreed());
+        assertNull(horse.getHorseDescription());
     }
 
     @Test
@@ -36,14 +35,22 @@ public class HorseTest {
         horse.setHorseImageLink("http://shadowfax.link");
         horse.setHorseBirthday(LocalDate.of(2010, 6, 1));
         horse.setHorseDeathday(LocalDate.of(2020, 12, 31));
-        horse.setHorseBreed("Andalusian");
+        horse.setHorseDescription("A majestic and noble steed");
 
         assertEquals(10L, horse.getHorseId());
         assertEquals("Shadowfax", horse.getHorseName());
         assertEquals("http://shadowfax.link", horse.getHorseImageLink());
         assertEquals(LocalDate.of(2010, 6, 1), horse.getHorseBirthday());
         assertEquals(LocalDate.of(2020, 12, 31), horse.getHorseDeathday());
-        assertEquals("Andalusian", horse.getHorseBreed());
+        assertEquals("A majestic and noble steed", horse.getHorseDescription());
     }
-    
+
+    @Test
+    void testHorseDescriptionSetter() {
+        Horse horse = new Horse("Trigger", "http://trigger.link", LocalDate.of(2005, 4, 15), null);
+        assertNull(horse.getHorseDescription());
+        
+        horse.setHorseDescription("Known for incredible loyalty and speed");
+        assertEquals("Known for incredible loyalty and speed", horse.getHorseDescription());
+    }
 }

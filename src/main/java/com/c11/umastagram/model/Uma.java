@@ -40,7 +40,6 @@ public class Uma {
         this.umaImageLink = umaImageLink;
         this.umaBirthday = umaBirthday;
         this.funFact = funFact;
-        this.umaIconLink = umaIconLink;
     }
 
     // Getters and Setters

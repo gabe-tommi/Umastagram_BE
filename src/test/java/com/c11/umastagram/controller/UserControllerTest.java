@@ -11,14 +11,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import com.c11.umastagram.controller.UserController;
 import com.c11.umastagram.service.UserService;
 import com.c11.umastagram.util.JwtUtil;
 import com.c11.umastagram.dto.SignupRequest;
 import com.c11.umastagram.dto.LoginRequest;
 import com.c11.umastagram.model.User;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;

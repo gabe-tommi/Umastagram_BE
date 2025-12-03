@@ -115,6 +115,7 @@ public class UmaService {
     }
 
     /**
+     * Find an Uma's image link by id.
      * @param id Uma ID
      * @return Optional containing Uma if found, else empty
      * Retrieve an Uma's image link by id.

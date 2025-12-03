@@ -80,6 +80,8 @@ public interface UmaRepository extends JpaRepository<Uma, Long> {
      */    
     @Query("SELECT u.umaIconLink FROM Uma u WHERE u.umaId = :umaId")
     Optional<String> getUmaIconLinkById(@Param("umaId") Long umaId);
+
+    
     
 
 }
