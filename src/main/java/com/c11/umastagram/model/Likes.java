@@ -26,14 +26,11 @@ public class Likes {
     @JoinColumn(name = "post_id", nullable = false)
     private Posts post;
 
-    public Likes() {
-        this.dateLiked = LocalDateTime.now();
-    }
+    public Likes() {}
 
     public Likes(User user, Posts post) {
         this.user = user;
         this.post = post;
-        this.dateLiked = LocalDateTime.now();
     }
 
     // Getters and setters
