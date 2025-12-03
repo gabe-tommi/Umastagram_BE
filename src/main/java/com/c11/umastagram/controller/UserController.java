@@ -117,7 +117,7 @@ public class UserController {
                 "message", "Username changed successfully",
                 "userId", user.getUserId(),
                 "username", user.getUsername(),
-                "email", user.getEmail()
+                "email", user.getEmail() != null ? user.getEmail() : ""
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
