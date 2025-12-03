@@ -18,7 +18,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UmaRepository extends JpaRepository<Uma, Integer> {
+public interface UmaRepository extends JpaRepository<Uma, Long> {
 
     /** Retrieves all Uma entities from DB
      * JPQL: SELECT u FROM Uma u
@@ -72,5 +72,14 @@ public interface UmaRepository extends JpaRepository<Uma, Integer> {
      */
     @Query("SELECT u.umaBirthday FROM Uma u WHERE u.umaId = :umaId")
     Optional<java.time.LocalDate> getUmaBirthdayById(@Param("umaId") Long umaId);
+
+    /** Retrieves Uma Icon Link by Uma ID
+     * JPQL: SELECT u.umaIconLink FROM Uma u WHERE u.umaId = :umaId
+     * @param umaId the ID of the Uma
+     * @return Optional<String> containing the icon link if found, or empty otherwise
+     */    
+    @Query("SELECT u.umaIconLink FROM Uma u WHERE u.umaId = :umaId")
+    Optional<String> getUmaIconLinkById(@Param("umaId") Long umaId);
+    
 
 }

@@ -29,6 +29,9 @@ public class Uma {
     @Column(length = 255)
     private String funFact;
 
+    @Column(length = 255)
+    private String umaIconLink;
+
     // Constructors
     public Uma() {}
 
@@ -37,6 +40,7 @@ public class Uma {
         this.umaImageLink = umaImageLink;
         this.umaBirthday = umaBirthday;
         this.funFact = funFact;
+        this.umaIconLink = umaIconLink;
     }
 
     // Getters and Setters
@@ -78,6 +82,12 @@ public class Uma {
 
     public void setFunFact(String funFact) {
         this.funFact = funFact;
+    }
+    public String getUmaIconLink() {
+        return umaIconLink;
+    }
+    public void setUmaIconLink(String umaIconLink) {
+        this.umaIconLink = umaIconLink;
     }
 }
 
