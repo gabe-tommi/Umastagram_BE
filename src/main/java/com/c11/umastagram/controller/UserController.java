@@ -111,7 +111,6 @@ public class UserController {
             }
 
             User user = userOpt.get();
-            user.setUsername(newUsername.trim());
             userService.setUsername(user, newUsername.trim());
 
             return ResponseEntity.ok(Map.of(
@@ -120,9 +119,14 @@ public class UserController {
                 "username", user.getUsername(),
                 "email", user.getEmail()
             ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred while changing username",
-                "details", e.getMessage()));
+            e.printStackTrace(); // Log the full stack trace
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "error", "An error occurred while changing username",
+                "details", e.getMessage()
+            ));
         }
     }
 }
