@@ -16,6 +16,18 @@ public class UmaController {
     private UmaService umaService;
 
     /**
+     * Get all Umas
+     * GET /uma/all
+     * @return List of all Uma entities
+     */
+    @GetMapping("/all")
+    public ResponseEntity<List<Uma>> getAllUmas() {
+        return umaService.getAllUmas()
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.ok(List.of()));
+    }
+
+    /**
      * Search for Umas by keyword
      * GET /uma/search?keyword={keyword}
      * @param keyword search term to match against name, bio, or fun fact
