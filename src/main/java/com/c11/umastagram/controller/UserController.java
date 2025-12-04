@@ -15,10 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.c11.umastagram.dto.LoginRequest;
+
+import java.util.List;
 import java.util.Optional;
 import com.c11.umastagram.util.JwtUtil;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/user")
@@ -123,6 +127,27 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred while changing username",
                 "details", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/userSearch/{query}")
+    public List<String> userSearch(@PathVariable String query) {
+        // Hey ! This function was written by Gabe Gallagher for his really cool search functionality
+        // Dec 3, 2025
+        try{
+            List<String> results = new java.util.ArrayList<>();
+            List<User> userResults = userService.findSimilarUsersByUsername(query);
+            if(userResults.isEmpty()){
+                return results;
+            }
+            for(int i = 0; i < userResults.size(); i++) {
+                results.add(userResults.get(i).getUsername());
+            }
+            return results;
+        }
+        catch(Exception e){
+            return new java.util.ArrayList<>();
+            // returns empty list in case of error
         }
     }
 }

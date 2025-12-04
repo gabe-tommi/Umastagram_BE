@@ -204,4 +204,8 @@ public class UserService {
         user.setUsername(newUsername);
         userRepository.save(user);
     }
+
+    public List<User> findSimilarUsersByUsername(String baseUsername) {
+        return userRepository.findUserByUsernameContaining(baseUsername);
+    }
 }
