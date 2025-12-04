@@ -46,6 +46,7 @@ public class UmaRepositoryTest {
         uma1.setUmaImageLink("http://example.com/special-week.jpg");
         uma1.setUmaIconLink("http://example.com/special-week-icon.png");
         uma1.setFunFact("Won the Japan Cup!");
+        uma1.setUmaBio("A determined champion with unwavering spirit and incredible perseverance");
         uma1.setUmaBirthday(LocalDate.of(2015, 5, 2));
 
         Uma uma2 = new Uma();
@@ -53,6 +54,7 @@ public class UmaRepositoryTest {
         uma2.setUmaImageLink("http://example.com/suzuka.jpg");
         uma2.setUmaIconLink("http://example.com/suzuka-icon.png");
         uma2.setFunFact("Known for incredible speed!");
+        uma2.setUmaBio("The legendary speed queen of the racing world with unmatched velocity");
         uma2.setUmaBirthday(LocalDate.of(2014, 4, 15));
 
         entityManager.persist(uma1);
@@ -74,7 +76,7 @@ public class UmaRepositoryTest {
         // Create the `uma` table in the H2 in-memory DB so tests can run independent of Hibernate DDL
         try {
         entityManager.getEntityManager()
-                    .createNativeQuery("CREATE TABLE IF NOT EXISTS \"uma\" (\"uma_id\" BIGINT AUTO_INCREMENT PRIMARY KEY, \"uma_name\" VARCHAR(255), \"uma_image_link\" CLOB NOT NULL, \"uma_birthday\" DATE, \"fun_fact\" VARCHAR(255), \"uma_icon_link\" VARCHAR(255))")
+                    .createNativeQuery("CREATE TABLE IF NOT EXISTS \"uma\" (\"uma_id\" BIGINT AUTO_INCREMENT PRIMARY KEY, \"uma_name\" VARCHAR(255), \"uma_image_link\" CLOB NOT NULL, \"uma_birthday\" DATE, \"fun_fact\" VARCHAR(255), \"uma_icon\" VARCHAR(255), \"uma_bio\" VARCHAR(255))")
                     .executeUpdate();
         } catch (Exception ignored) {
             // If creation fails (table already exists or DDL not supported), ignore and let tests proceed
@@ -89,6 +91,7 @@ public class UmaRepositoryTest {
         uma.setUmaImageLink("http://example.com/teio.jpg");
         uma.setUmaIconLink("http://example.com/teio-icon.png");
         uma.setFunFact("Triple Crown winner!");
+        uma.setUmaBio("A graceful champion who conquered the Triple Crown with elegance and strength");
         uma.setUmaBirthday(LocalDate.of(2015, 3, 21));
 
         entityManager.persist(uma);
@@ -110,6 +113,7 @@ public class UmaRepositoryTest {
         uma.setUmaImageLink("http://example.com/goldship.jpg");
         uma.setUmaIconLink("http://example.com/goldship-icon.png");
         uma.setFunFact("Known for unpredictable behavior!");
+        uma.setUmaBio("An eccentric racer whose unpredictable nature makes her thrilling to watch");
         uma.setUmaBirthday(LocalDate.of(2014, 3, 6));
 
         entityManager.persist(uma);
@@ -131,6 +135,7 @@ public class UmaRepositoryTest {
         uma.setUmaImageLink("http://example.com/mcqueen.jpg");
         uma.setUmaIconLink("http://example.com/mcqueen-icon.png");
         uma.setFunFact("Speed and elegance combined!");
+        uma.setUmaBio("A sophisticated champion known for her poise and incredible winning streak");
         uma.setUmaBirthday(LocalDate.of(2015, 1, 15));
 
         entityManager.persist(uma);
@@ -152,6 +157,7 @@ public class UmaRepositoryTest {
         uma.setUmaImageLink("http://example.com/rice-shower.jpg");
         uma.setUmaIconLink("http://example.com/rice-shower-icon.png");
         uma.setFunFact("Overcame all odds to become a champion!");
+        uma.setUmaBio("An inspiring underdog story of perseverance and determination against adversity");
         uma.setUmaBirthday(LocalDate.of(2014, 2, 28));
 
         entityManager.persist(uma);
@@ -173,6 +179,7 @@ public class UmaRepositoryTest {
         uma.setUmaImageLink("http://example.com/vodka.jpg");
         uma.setUmaIconLink("http://example.com/vodka-icon.png");
         uma.setFunFact("First female horse to win the Japan Cup!");
+        uma.setUmaBio("A trailblazing legend who shattered barriers and proved women could dominate the racing world");
         LocalDate birthday = LocalDate.of(2014, 5, 1);
         uma.setUmaBirthday(birthday);
 
@@ -203,5 +210,36 @@ public class UmaRepositoryTest {
 
         // Then
         assertThat(notFound).isEmpty();
+    }
+
+    @Test
+    public void whenGetUmaBioById_thenReturnBio() {
+        // Given
+        Uma uma = new Uma();
+        uma.setUmaName("Smart Falcon");
+        uma.setUmaImageLink("http://example.com/smart-falcon.jpg");
+        uma.setUmaIconLink("http://example.com/smart-falcon-icon.png");
+        uma.setFunFact("Known for intelligence and strategy!");
+        uma.setUmaBio("A cunning racer with exceptional tactical skills, excelling in close finishes");
+        uma.setUmaBirthday(LocalDate.of(2013, 7, 20));
+
+        entityManager.persist(uma);
+        entityManager.flush();
+
+        // When
+        Optional<String> bio = umaRepository.getUmaBioById(uma.getUmaId());
+
+        // Then
+        assertThat(bio).isPresent();
+        assertThat(bio.get()).isEqualTo("A cunning racer with exceptional tactical skills, excelling in close finishes");
+    }
+
+    @Test
+    public void whenGetUmaBioById_withNonExistentId_thenReturnEmpty() {
+        // When
+        Optional<String> bio = umaRepository.getUmaBioById(999L);
+
+        // Then
+        assertThat(bio).isEmpty();
     }
 }

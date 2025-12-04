@@ -16,19 +16,19 @@ public class Horse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long horseId;
 
-    @Column(length = 255)
+    @Column(name = "horse_name", length = 255)
     private String horseName;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "horse_image_link", columnDefinition = "TEXT", nullable = false)
     private String horseImageLink;
 
-    @Column
+    @Column(name = "horse_birthday")
     private LocalDate horseBirthday;
 
-    @Column
+    @Column(name = "horse_deathday")    
     private LocalDate horseDeathday;
 
-    @Column
+    @Column(name = "horse_desc")
     private String horseDescription;
 
 

@@ -169,4 +169,14 @@ public class UmaService {
         if (id == null) return Optional.empty();
         return umaRepository.getUmaIconLinkById(id);
     }
+
+    /** Retrieve an Uma's bio by id. 
+     * @param id Uma ID
+     * @return Optional containing Uma if found, else empty
+    */
+    public Optional<String> getUmaBioById(Long id) {
+        if (id == null) return Optional.empty();
+        return umaRepository.getUmaBioById(id);
+    }
+
 }

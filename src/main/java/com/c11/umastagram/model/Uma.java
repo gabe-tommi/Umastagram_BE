@@ -15,22 +15,26 @@ public class Uma {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "uma_id")
     private Long umaId;
 
-    @Column(length = 255)
+    @Column(name = "uma_name", length = 255)
     private String umaName;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "uma_image_link", columnDefinition = "TEXT", nullable = false)
     private String umaImageLink;
 
-    @Column
+    @Column(name = "uma_birthday")
     private LocalDate umaBirthday;
 
-    @Column(length = 255)
+    @Column(name = "fun_fact", length = 255)
     private String funFact;
 
-    @Column(length = 255)
+    @Column(name = "uma_icon", length = 255)
     private String umaIconLink;
+
+    @Column(name = "uma_bio", length = 255)
+    private String umaBio;
 
     // Constructors
     public Uma() {}
@@ -87,6 +91,13 @@ public class Uma {
     }
     public void setUmaIconLink(String umaIconLink) {
         this.umaIconLink = umaIconLink;
+    }
+
+    public String getUmaBio() {
+        return umaBio;
+    }
+    public void setUmaBio(String umaBio) {
+        this.umaBio = umaBio;
     }
 }
 

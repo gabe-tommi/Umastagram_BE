@@ -81,7 +81,12 @@ public interface UmaRepository extends JpaRepository<Uma, Long> {
     @Query("SELECT u.umaIconLink FROM Uma u WHERE u.umaId = :umaId")
     Optional<String> getUmaIconLinkById(@Param("umaId") Long umaId);
 
-    
-    
+    /** Retrieves Uma Bio by Uma ID
+     * JPQL: SELECT u.umaBio FROM Uma u WHERE u.umaId = :umaId
+     * @param umaId the ID of the Uma
+     * @return Optional<String> containing the bio if found, or empty otherwise
+     */    
+    @Query("SELECT u.umaBio FROM Uma u WHERE u.umaId = :umaId")
+    Optional<String> getUmaBioById(@Param("umaId") Long umaId);
 
 }

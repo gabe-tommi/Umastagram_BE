@@ -32,6 +32,7 @@ public class UmaServiceTest {
         uma.setUmaImageLink("http://example.com/test.jpg");
         uma.setUmaIconLink("http://example.com/icon.png");
         uma.setFunFact("Fast horse");
+        uma.setUmaBio("A test champion with great abilities");
 
         when(umaRepository.getUmaByName("Test Uma")).thenReturn(Optional.empty());
         when(umaRepository.save(any(Uma.class))).thenAnswer(invocation -> {
@@ -70,6 +71,7 @@ public class UmaServiceTest {
         uma.setUmaName("Duplicate");
         uma.setUmaImageLink("http://example.com/test.jpg");
         uma.setUmaIconLink("http://example.com/icon.png");
+        uma.setUmaBio("A duplicate uma bio");
 
         when(umaRepository.getUmaByName("Duplicate")).thenReturn(Optional.of(new Uma()));
 
@@ -146,6 +148,41 @@ public class UmaServiceTest {
 
         assertThat(iconLink).isEmpty();
         verify(umaRepository, never()).getUmaIconLinkById(any());
+    }
+
+    @Test
+    public void getUmaBioById_returnsBio() {
+        UmaService service = new UmaService(umaRepository);
+
+        when(umaRepository.getUmaBioById(2L)).thenReturn(Optional.of("A legendary racing champion known for speed and grace"));
+
+        Optional<String> bio = service.getUmaBioById(2L);
+
+        assertThat(bio).isPresent();
+        assertThat(bio.get()).isEqualTo("A legendary racing champion known for speed and grace");
+        verify(umaRepository).getUmaBioById(2L);
+    }
+
+    @Test
+    public void getUmaBioById_withNonExistentId_returnsEmpty() {
+        UmaService service = new UmaService(umaRepository);
+
+        when(umaRepository.getUmaBioById(999L)).thenReturn(Optional.empty());
+
+        Optional<String> bio = service.getUmaBioById(999L);
+
+        assertThat(bio).isEmpty();
+        verify(umaRepository).getUmaBioById(999L);
+    }
+
+    @Test
+    public void getUmaBioById_withNullId_returnsEmpty() {
+        UmaService service = new UmaService(umaRepository);
+
+        Optional<String> bio = service.getUmaBioById(null);
+
+        assertThat(bio).isEmpty();
+        verify(umaRepository, never()).getUmaBioById(any());
     }
 
     @Test
