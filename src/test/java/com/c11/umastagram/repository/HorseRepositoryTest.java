@@ -37,8 +37,8 @@ public class HorseRepositoryTest {
     public void createHorseTableIfNeeded() {
         // Create the `horse` table in the H2 in-memory DB so tests can run independent of Hibernate DDL
         try {
-            entityManager.getEntityManager()
-                    .createNativeQuery("CREATE TABLE IF NOT EXISTS \"horse\" (\"horse_id\" BIGINT AUTO_INCREMENT PRIMARY KEY, \"horse_name\" VARCHAR(255), \"horse_image_link\" CLOB NOT NULL, \"horse_birthday\" DATE, \"horse_deathday\" DATE, \"horse_description\" VARCHAR(255))")
+                entityManager.getEntityManager()
+                    .createNativeQuery("CREATE TABLE IF NOT EXISTS \"horse\" (\"horse_id\" BIGINT AUTO_INCREMENT PRIMARY KEY, \"horse_name\" VARCHAR(255), \"horse_image_link\" CLOB NOT NULL, \"horse_birthday\" DATE, \"horse_deathday\" DATE, \"horse_desc\" VARCHAR(255))")
                     .executeUpdate();
         } catch (Exception ignored) {
             // If creation fails (table already exists or DDL not supported), ignore and let tests proceed

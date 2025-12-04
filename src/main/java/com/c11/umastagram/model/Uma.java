@@ -15,7 +15,7 @@ public class Uma {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "uma_id", nullable = false)
+    @Column(name = "uma_id", nullable = false, unique = true)
     private Long umaId;
 
     @Column(name = "uma_name", length = 255)
