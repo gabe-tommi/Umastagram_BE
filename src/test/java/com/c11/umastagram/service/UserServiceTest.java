@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import com.c11.umastagram.model.User;
 import com.c11.umastagram.repository.UserRepository;
 
-import java.lang.StackWalker.Option;
 import java.util.List;
 
 @SpringBootTest
