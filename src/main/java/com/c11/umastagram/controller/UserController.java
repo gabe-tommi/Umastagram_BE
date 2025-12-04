@@ -157,6 +157,7 @@ public class UserController {
 
     @GetMapping("/getUserByUsername/{username}")
     public List<String> getUserByUsername(@PathVariable String username) {
+        // Gabe Gallagher - LDM Dec 4 2025
         List<String> userInfo = new java.util.ArrayList<>();
         try {
             Optional<User> userOpt = userService.findUserByUsername(username);
