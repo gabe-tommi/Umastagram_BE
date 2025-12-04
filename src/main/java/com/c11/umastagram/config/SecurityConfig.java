@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").permitAll()  // Allow all API endpoints without auth (for now)
                 .requestMatchers("/auth/**").permitAll()  // Allow auth endpoints
                 .requestMatchers("/user/signup", "/user/login", "/user/username/change").permitAll()  // Allow user signup and login
+                .requestMatchers("/uma/**").permitAll()  // Allow Uma endpoints
                 .anyRequest().authenticated()
             )
             // .oauth2Login(oauth2 -> oauth2

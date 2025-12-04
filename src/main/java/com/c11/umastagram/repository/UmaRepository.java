@@ -89,4 +89,14 @@ public interface UmaRepository extends JpaRepository<Uma, Long> {
     @Query("SELECT u.umaBio FROM Uma u WHERE u.umaId = :umaId")
     Optional<String> getUmaBioById(@Param("umaId") Long umaId);
 
+    /** Searches for Uma entities by keyword in name, bio, or fun fact
+     * JPQL: SELECT u FROM Uma u WHERE LOWER(u.umaName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+     *       OR LOWER(u.umaBio) LIKE LOWER(CONCAT('%', :keyword, '%'))
+     *       OR LOWER(u.funFact) LIKE LOWER(CONCAT('%', :keyword, '%'))
+     * @param keyword the search keyword
+     * @return List<Uma> containing matching Uma entities
+     */
+    @Query("SELECT u FROM Uma u WHERE LOWER(u.umaName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.umaBio) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.funFact) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<Uma> searchUmasByKeyword(@Param("keyword") String keyword);
+
 }

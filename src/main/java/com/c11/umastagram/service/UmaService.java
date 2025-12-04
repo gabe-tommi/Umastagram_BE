@@ -179,4 +179,16 @@ public class UmaService {
         return umaRepository.getUmaBioById(id);
     }
 
+    /**
+     * Search for Umas by keyword in name, bio, or fun fact.
+     * @param keyword search term
+     * @return List of matching Umas (empty if no matches or keyword is null/empty)
+     */
+    public List<Uma> searchUmasByKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
+        return umaRepository.searchUmasByKeyword(keyword.trim());
+    }
+
 }
