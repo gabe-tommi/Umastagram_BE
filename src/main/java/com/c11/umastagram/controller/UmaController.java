@@ -32,7 +32,7 @@ public class UmaController {
     public ResponseEntity<List<UmaListResponse>> getAllUmas() {
         List<Uma> umas = umaRepository.findAll();
         List<UmaListResponse> response = umas.stream()
-                .map(uma -> new UmaListResponse(uma.getUmaId(), uma.getUmaName(), uma.getUmaImageLink()))
+                .map(uma -> new UmaListResponse(uma.getUmaId(), uma.getUmaName(), uma.getUmaIconLink()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
