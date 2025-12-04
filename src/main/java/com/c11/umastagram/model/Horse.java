@@ -14,32 +14,33 @@ public class Horse {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "horse_id", nullable = false, unique = true)
     private Long horseId;
 
-    @Column(length = 255)
+    @Column(name = "horse_name", length = 255)
     private String horseName;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "horse_image_link", columnDefinition = "TEXT", nullable = false)
     private String horseImageLink;
 
-    @Column
+    @Column(name = "horse_birthday")
     private LocalDate horseBirthday;
 
-    @Column
+    @Column(name = "horse_deathday")    
     private LocalDate horseDeathday;
 
-    @Column(length = 255)
-    private String horseBreed;
+    @Column(name = "horse_desc")
+    private String horseDescription;
+
 
     // Constructors
     public Horse() {}
 
-    public Horse(String horseName, String horseImageLink, LocalDate horseBirthday, LocalDate horseDeathday, String horseBreed) {
+    public Horse(String horseName, String horseImageLink, LocalDate horseBirthday, LocalDate horseDeathday) {
         this.horseName = horseName;
         this.horseImageLink = horseImageLink;
         this.horseBirthday = horseBirthday;
         this.horseDeathday = horseDeathday;
-        this.horseBreed = horseBreed;
     }
 
     // Getters and Setters
@@ -83,11 +84,11 @@ public class Horse {
         this.horseDeathday = horseDeathday;
     }
 
-    public String getHorseBreed() {
-        return horseBreed;
+    public String getHorseDescription() {
+        return horseDescription;
     }
 
-    public void setHorseBreed(String horseBreed) {
-        this.horseBreed = horseBreed;
-    } 
+    public void setHorseDescription(String horseDescription) {
+        this.horseDescription = horseDescription;
+    }
 }

@@ -30,7 +30,9 @@ public class UmaServiceTest {
         Uma uma = new Uma();
         uma.setUmaName("Test Uma");
         uma.setUmaImageLink("http://example.com/test.jpg");
+        uma.setUmaIconLink("http://example.com/icon.png");
         uma.setFunFact("Fast horse");
+        uma.setUmaBio("A test champion with great abilities");
 
         when(umaRepository.getUmaByName("Test Uma")).thenReturn(Optional.empty());
         when(umaRepository.save(any(Uma.class))).thenAnswer(invocation -> {
@@ -68,6 +70,8 @@ public class UmaServiceTest {
         Uma uma = new Uma();
         uma.setUmaName("Duplicate");
         uma.setUmaImageLink("http://example.com/test.jpg");
+        uma.setUmaIconLink("http://example.com/icon.png");
+        uma.setUmaBio("A duplicate uma bio");
 
         when(umaRepository.getUmaByName("Duplicate")).thenReturn(Optional.of(new Uma()));
 
@@ -121,5 +125,98 @@ public class UmaServiceTest {
 
         assertThat(msg).contains("ToDelete");
         verify(umaRepository).delete(uma);
+    }
+
+    @Test
+    public void getUmaIconLinkById_returnsIconLink() {
+        UmaService service = new UmaService(umaRepository);
+
+        when(umaRepository.getUmaIconLinkById(3L)).thenReturn(Optional.of("http://example.com/icon.png"));
+
+        Optional<String> iconLink = service.getUmaIconLinkById(3L);
+
+        assertThat(iconLink).isPresent();
+        assertThat(iconLink.get()).isEqualTo("http://example.com/icon.png");
+        verify(umaRepository).getUmaIconLinkById(3L);
+    }
+
+    @Test
+    public void getUmaIconLinkById_withNullId_returnsEmpty() {
+        UmaService service = new UmaService(umaRepository);
+
+        Optional<String> iconLink = service.getUmaIconLinkById(null);
+
+        assertThat(iconLink).isEmpty();
+        verify(umaRepository, never()).getUmaIconLinkById(any());
+    }
+
+    @Test
+    public void getUmaBioById_returnsBio() {
+        UmaService service = new UmaService(umaRepository);
+
+        when(umaRepository.getUmaBioById(2L)).thenReturn(Optional.of("A legendary racing champion known for speed and grace"));
+
+        Optional<String> bio = service.getUmaBioById(2L);
+
+        assertThat(bio).isPresent();
+        assertThat(bio.get()).isEqualTo("A legendary racing champion known for speed and grace");
+        verify(umaRepository).getUmaBioById(2L);
+    }
+
+    @Test
+    public void getUmaBioById_withNonExistentId_returnsEmpty() {
+        UmaService service = new UmaService(umaRepository);
+
+        when(umaRepository.getUmaBioById(999L)).thenReturn(Optional.empty());
+
+        Optional<String> bio = service.getUmaBioById(999L);
+
+        assertThat(bio).isEmpty();
+        verify(umaRepository).getUmaBioById(999L);
+    }
+
+    @Test
+    public void getUmaBioById_withNullId_returnsEmpty() {
+        UmaService service = new UmaService(umaRepository);
+
+        Optional<String> bio = service.getUmaBioById(null);
+
+        assertThat(bio).isEmpty();
+        verify(umaRepository, never()).getUmaBioById(any());
+    }
+
+    @Test
+    public void getUmaImageLinkById_returnsImageLink() {
+        UmaService service = new UmaService(umaRepository);
+
+        when(umaRepository.getUmaImageLinkById(7L)).thenReturn(Optional.of("http://example.com/uma-image.jpg"));
+
+        Optional<String> imageLink = service.getUmaImageLinkById(7L);
+
+        assertThat(imageLink).isPresent();
+        assertThat(imageLink.get()).isEqualTo("http://example.com/uma-image.jpg");
+        verify(umaRepository).getUmaImageLinkById(7L);
+    }
+
+    @Test
+    public void getUmaImageLinkById_withNonExistentId_returnsEmpty() {
+        UmaService service = new UmaService(umaRepository);
+
+        when(umaRepository.getUmaImageLinkById(999L)).thenReturn(Optional.empty());
+
+        Optional<String> imageLink = service.getUmaImageLinkById(999L);
+
+        assertThat(imageLink).isEmpty();
+        verify(umaRepository).getUmaImageLinkById(999L);
+    }
+
+    @Test
+    public void getUmaImageLinkById_withNullId_returnsEmpty() {
+        UmaService service = new UmaService(umaRepository);
+
+        Optional<String> imageLink = service.getUmaImageLinkById(null);
+
+        assertThat(imageLink).isEmpty();
+        verify(umaRepository, never()).getUmaImageLinkById(any());
     }
 }

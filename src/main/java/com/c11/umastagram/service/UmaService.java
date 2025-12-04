@@ -59,16 +59,20 @@ public class UmaService {
         String name = uma.getUmaName() == null ? null : uma.getUmaName().trim();
         String imageLink = uma.getUmaImageLink() == null ? null : uma.getUmaImageLink().trim();
         String funFact = uma.getFunFact() == null ? null : uma.getFunFact().trim();
+        String iconLink = uma.getUmaIconLink() == null ? null : uma.getUmaIconLink().trim();
 
         uma.setUmaName(name);
         uma.setUmaImageLink(imageLink);
         uma.setFunFact(funFact);
-
+        uma.setUmaIconLink(iconLink);
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Uma name is required");
         }
         if (imageLink == null || imageLink.isEmpty()) {
             throw new IllegalArgumentException("Uma image link is required");
+        }
+        if (iconLink == null || iconLink.isEmpty()) {
+            throw new IllegalArgumentException("Uma icon link is required");
         }
 
         // prevent duplicate names for new entities
@@ -111,6 +115,7 @@ public class UmaService {
     }
 
     /**
+     * Find an Uma's image link by id.
      * @param id Uma ID
      * @return Optional containing Uma if found, else empty
      * Retrieve an Uma's image link by id.
@@ -153,6 +158,25 @@ public class UmaService {
             return "Uma '" + umaOpt.get().getUmaName() + "' deleted successfully";
         }
         return "Uma not found";
+    }
+
+    /**
+     * @param id Uma ID
+     * @return Optional containing Uma if found, else empty
+     * Retrieve an Uma's icon link by id.
+     */
+    public Optional<String> getUmaIconLinkById(Long id) {
+        if (id == null) return Optional.empty();
+        return umaRepository.getUmaIconLinkById(id);
+    }
+
+    /** Retrieve an Uma's bio by id. 
+     * @param id Uma ID
+     * @return Optional containing Uma if found, else empty
+    */
+    public Optional<String> getUmaBioById(Long id) {
+        if (id == null) return Optional.empty();
+        return umaRepository.getUmaBioById(id);
     }
 
 }

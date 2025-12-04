@@ -6,8 +6,6 @@ Summary: Contains the uma table and getters/setters for all information
 package com.c11.umastagram.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import com.c11.umastagram.model.Uma;
 
 
 import java.time.LocalDate;
