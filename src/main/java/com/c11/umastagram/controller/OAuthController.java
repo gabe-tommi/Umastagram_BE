@@ -8,6 +8,7 @@
  */
 package com.c11.umastagram.controller;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -45,6 +47,7 @@ import com.c11.umastagram.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import java.util.Base64;
 import java.util.HashMap;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;

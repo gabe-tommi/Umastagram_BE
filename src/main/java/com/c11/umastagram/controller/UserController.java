@@ -70,6 +70,8 @@ public class UserController {
             if (user == null || !user.getPassword().equals(password)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
             }
+            Long userId = user.getUserId();
+            String email = user.getEmail();
             String token = jwtUtil.generateToken(user.getUserId(), user.getUsername());
             return ResponseEntity.ok(Map.of(
                 "message", "Login successful for user: " + username,
