@@ -154,4 +154,25 @@ public class UserController {
             // returns empty list in case of error
         }
     }
+
+    @GetMapping("/getUserByUsername/{username}")
+    public List<String> getUserByUsername(@PathVariable String username) {
+        List<String> userInfo = new java.util.ArrayList<>();
+        try {
+            Optional<User> userOpt = userService.findUserByUsername(username);
+            if (userOpt.isEmpty()) {
+                userInfo.add("findUserByUsernameError");
+                return userInfo;
+            }
+            userInfo = List.of(
+                userOpt.get().getUserId().toString(),
+                userOpt.get().getUsername(),
+                userOpt.get().getEmail() != null ? userOpt.get().getEmail() : ""
+            );
+            return userInfo;
+        } catch (Exception e) {
+            userInfo.add("findUserByUsernameError");
+            return userInfo;
+        }
+    }
 }
