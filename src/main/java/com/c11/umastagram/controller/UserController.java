@@ -138,6 +138,7 @@ public class UserController {
     public List<String> userSearch(@PathVariable String query) {
         // Hey ! This function was written by Gabe Gallagher for his really cool search functionality
         // Dec 3, 2025
+        //
         try{
             List<String> results = new java.util.ArrayList<>();
             List<User> userResults = userService.findSimilarUsersByUsername(query);
