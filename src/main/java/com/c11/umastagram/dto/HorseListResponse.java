@@ -10,11 +10,13 @@ public class HorseListResponse {
     private Long id;
     private String name;
     private String imagePath;
+    private String description;
 
-    public HorseListResponse(Long id, String name, String imagePath) {
+    public HorseListResponse(Long id, String name, String imagePath, String string) {
         this.id = id;
         this.name = name;
         this.imagePath = imagePath;
+        this.description = description;
     }
 
     public Long getId() {
@@ -39,5 +41,13 @@ public class HorseListResponse {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

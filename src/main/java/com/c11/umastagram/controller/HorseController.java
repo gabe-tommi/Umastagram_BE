@@ -32,7 +32,7 @@ public class HorseController {
     public ResponseEntity<List<HorseListResponse>> getAllHorses() {
         List<Horse> horses = horseRepository.findAll();
         List<HorseListResponse> response = horses.stream()
-                .map(horse -> new HorseListResponse(horse.getHorseId(), horse.getHorseName(), horse.getHorseImageLink()))
+                .map(horse -> new HorseListResponse(horse.getHorseId(), horse.getHorseName(), horse.getHorseImageLink(), horse.getHorseDescription()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
