@@ -169,7 +169,7 @@ public class UserController {
             userInfo = List.of(
                 userOpt.get().getUserId().toString(),
                 userOpt.get().getUsername(),
-                userOpt.get().getGithubUsername(),
+                userOpt.get().getGithubUsername() != null ? userOpt.get().getGithubUsername() : "",
                 userOpt.get().getEmail() != null ? userOpt.get().getEmail() : ""
             );
             return userInfo;
