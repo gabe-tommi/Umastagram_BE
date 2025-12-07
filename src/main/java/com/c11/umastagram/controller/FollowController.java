@@ -5,6 +5,7 @@ import com.c11.umastagram.model.FriendRequest;
 import com.c11.umastagram.service.FollowService;
 import com.c11.umastagram.service.FriendRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -29,10 +30,16 @@ public class FollowController {
     }
 
     @PostMapping("/sendFriendRequest/{userId}/{friendId}")
-    public void sendFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
-        LocalDateTime now = LocalDateTime.now();
-        FriendRequest fr = new FriendRequest(userId, friendId, now);
-        friendRequestService.saveFriendRequest(fr);
+    public ResponseEntity<String> sendFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            FriendRequest fr = new FriendRequest(userId, friendId, now);
+            friendRequestService.saveFriendRequest(fr);
+            return ResponseEntity.ok("Friend request sent successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
 
     @GetMapping("/acceptFriendRequest/{userId}/{friendId}")
