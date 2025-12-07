@@ -169,8 +169,8 @@ public class UserController {
             userInfo = List.of(
                 userOpt.get().getUserId().toString(),
                 userOpt.get().getUsername(),
-                userOpt.get().getGithubUsername() != null ? userOpt.get().getGithubUsername() : "",
-                userOpt.get().getEmail() != null ? userOpt.get().getEmail() : ""
+                userOpt.get().getGithubUsername() != null ? userOpt.get().getGithubUsername() : "This User Hasn't Linked A GitHub Account",
+                userOpt.get().getEmail() != null ? userOpt.get().getEmail() : "This User Hasn't Added An Email"
             );
             return userInfo;
         } catch (Exception e) {
