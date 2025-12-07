@@ -28,11 +28,11 @@ public class FollowController {
         return followService.getUserFollowers(userId);
     }
 
-    @GetMapping("/sendFriendRequest/{userId}/{friendId}")
-    public FriendRequest sendFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
+    @PostMapping("/sendFriendRequest/{userId}/{friendId}")
+    public void sendFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
         LocalDateTime now = LocalDateTime.now();
         FriendRequest fr = new FriendRequest(userId, friendId, now);
-        return friendRequestService.saveFriendRequest(fr);
+        friendRequestService.saveFriendRequest(fr);
     }
 
     @GetMapping("/acceptFriendRequest/{userId}/{friendId}")
