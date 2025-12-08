@@ -34,7 +34,7 @@ public class FollowController {
         return friendRequestService.getUserFriendRequests(userId);
     }
 
-    @PostMapping("/deleteFriendRequest/{userId}/{friendId}")
+    @DeleteMapping("/deleteFriendRequest/{userId}/{friendId}")
     public ResponseEntity<String> deleteFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
         try {
             friendRequestService.deleteFriendRequest(userId, friendId);
