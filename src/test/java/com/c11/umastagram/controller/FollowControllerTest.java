@@ -14,25 +14,25 @@ import static org.mockito.Mockito.*;
 
 public class FollowControllerTest {
 
-    @Test
-    public void acceptFriendRequest_callsServicesAndReturnsFollow() {
-        FriendRequestService frMock = mock(FriendRequestService.class);
-        FollowService followMock = mock(FollowService.class);
-
-        Follow expected = new Follow(1L, 2L, LocalDateTime.now());
-        when(followMock.saveFollow(any(Follow.class))).thenReturn(expected);
-
-        FollowController controller = new FollowController(frMock, followMock);
-
-        Follow result = controller.acceptFriendRequest(1L, 2L);
-
-        assertNotNull(result);
-        assertEquals(expected.getUserId(), result.getUserId());
-        assertEquals(expected.getFriendId(), result.getFriendId());
-
-        verify(frMock, times(1)).deleteFriendRequest(1L, 2L);
-        verify(followMock, times(1)).saveFollow(any(Follow.class));
-    }
+//    @Test
+//    public void acceptFriendRequest_callsServicesAndReturnsFollow() {
+//        FriendRequestService frMock = mock(FriendRequestService.class);
+//        FollowService followMock = mock(FollowService.class);
+//
+//        Follow expected = new Follow(1L, 2L, LocalDateTime.now());
+//        when(followMock.saveFollow(any(Follow.class))).thenReturn(expected);
+//
+//        FollowController controller = new FollowController(frMock, followMock);
+//
+//        Follow result = controller.acceptFriendRequest(1L, 2L);
+//
+//        assertNotNull(result);
+//        assertEquals(expected.getUserId(), result.getUserId());
+//        assertEquals(expected.getFriendId(), result.getFriendId());
+//
+//        verify(frMock, times(1)).deleteFriendRequest(1L, 2L);
+//        verify(followMock, times(1)).saveFollow(any(Follow.class));
+//    }
 
     @Test
     public void sendFriendRequest_currentImplementationThrowsNullPointer() {

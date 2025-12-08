@@ -42,7 +42,7 @@ public class FollowController {
         }
     }
 
-    @GetMapping("/acceptFriendRequest/{userId}/{friendId}")
+    @PostMapping("/acceptFriendRequest/{userId}/{friendId}")
     public ResponseEntity<String> acceptFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
 //        LocalDateTime now = LocalDateTime.now();
 //        Follow follow = new Follow(userId, friendId, now);
