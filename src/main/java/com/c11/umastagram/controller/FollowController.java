@@ -61,7 +61,7 @@ public class FollowController {
             Follow friendFollow = new Follow(friendId, userId, now);
             followService.saveFollow(userFollow);
             followService.saveFollow(friendFollow);
-            friendRequestService.deleteFriendRequest(userId, friendId);
+//            friendRequestService.deleteFriendRequest(userId, friendId);
             return ResponseEntity.ok("Friend request accepted successfully");
         } catch (Exception e) {
             e.printStackTrace();
