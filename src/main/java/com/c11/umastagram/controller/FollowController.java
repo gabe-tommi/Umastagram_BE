@@ -57,9 +57,11 @@ public class FollowController {
 
         try {
             LocalDateTime now = LocalDateTime.now();
-            Follow follow = new Follow(userId, friendId, now);
-            followService.saveFollow(follow);
-            friendRequestService.deleteFriendRequest(friendId, userId);
+            Follow userFollow = new Follow(userId, friendId, now);
+            Follow friendFollow = new Follow(friendId, userId, now);
+            followService.saveFollow(userFollow);
+            followService.saveFollow(friendFollow);
+            friendRequestService.deleteFriendRequest(userId, friendId);
             return ResponseEntity.ok("Friend request accepted successfully");
         } catch (Exception e) {
             e.printStackTrace();
