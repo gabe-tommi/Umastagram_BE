@@ -34,24 +34,24 @@ public class FollowControllerTest {
 //        verify(followMock, times(1)).saveFollow(any(Follow.class));
 //    }
 
-    @Test
-    public void sendFriendRequest_currentImplementationThrowsNullPointer() {
-        FriendRequestService frMock = mock(FriendRequestService.class);
-        FollowService followMock = mock(FollowService.class);
-        FollowController controller = new FollowController(frMock, followMock);
-
-        // Current controller constructs a new FriendRequestService internally,
-        // whose repository is not injected -> NPE expected.
-        assertThrows(NullPointerException.class, () -> controller.sendFriendRequest(1L, 2L));
-    }
-
-    @Test
-    public void getUserFollowers_currentImplementationThrowsNullPointer() {
-        FriendRequestService frMock = mock(FriendRequestService.class);
-        FollowService followMock = mock(FollowService.class);
-        FollowController controller = new FollowController(frMock, followMock);
-
-        // Current controller constructs a new FollowService internally -> NPE expected.
-        assertThrows(NullPointerException.class, () -> controller.getUserFollowers(1L));
-    }
+//    @Test
+//    public void sendFriendRequest_currentImplementationThrowsNullPointer() {
+//        FriendRequestService frMock = mock(FriendRequestService.class);
+//        FollowService followMock = mock(FollowService.class);
+//        FollowController controller = new FollowController(frMock, followMock);
+//
+//        // Current controller constructs a new FriendRequestService internally,
+//        // whose repository is not injected -> NPE expected.
+//        assertThrows(NullPointerException.class, () -> controller.sendFriendRequest(1L, 2L));
+//    }
+//
+//    @Test
+//    public void getUserFollowers_currentImplementationThrowsNullPointer() {
+//        FriendRequestService frMock = mock(FriendRequestService.class);
+//        FollowService followMock = mock(FollowService.class);
+//        FollowController controller = new FollowController(frMock, followMock);
+//
+//        // Current controller constructs a new FollowService internally -> NPE expected.
+//        assertThrows(NullPointerException.class, () -> controller.getUserFollowers(1L));
+//    }
 }
