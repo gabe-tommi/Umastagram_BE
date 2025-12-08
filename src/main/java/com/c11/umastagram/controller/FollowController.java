@@ -34,6 +34,17 @@ public class FollowController {
         return friendRequestService.getUserFriendRequests(userId);
     }
 
+    @PostMapping("/deleteFriendRequest/{userId}/{friendId}")
+    public ResponseEntity<String> deleteFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
+        try {
+            friendRequestService.deleteFriendRequest(userId, friendId);
+            return ResponseEntity.ok("Friend request deleted successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/sendFriendRequest/{userId}/{friendId}")
     public ResponseEntity<String> sendFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
         try {
