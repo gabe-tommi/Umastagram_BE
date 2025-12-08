@@ -66,13 +66,10 @@ public class UmaControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].name", is("Uma One")))
-                // .andExpect(jsonPath("$[0].imagePath", is("https://example.com/uma1.jpg")))
-                .andExpect(jsonPath("$[0].iconPath", is("https://example.com/icon1.jpg")))
+                .andExpect(jsonPath("$[0].imagePath", is("https://example.com/icon1.jpg")))
                 .andExpect(jsonPath("$[1].id", is(2)))
                 .andExpect(jsonPath("$[1].name", is("Uma Two")))
-                // .andExpect(jsonPath("$[1].imagePath", is("https://example.com/uma2.jpg")))
-                .andExpect(jsonPath("$[1].iconPath", is("https://example.com/icon2.jpg")));
-
+                .andExpect(jsonPath("$[1].imagePath", is("https://example.com/icon2.jpg")));
         verify(umaRepository, times(1)).findAll();
     }
 
