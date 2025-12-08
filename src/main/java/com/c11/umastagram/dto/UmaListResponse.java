@@ -10,11 +10,13 @@ public class UmaListResponse {
     private Long id;
     private String name;
     private String imagePath;
+    private String iconPath;
 
-    public UmaListResponse(Long id, String name, String imagePath) {
+    public UmaListResponse(Long id, String name, String iconPath) {
         this.id = id;
         this.name = name;
-        this.imagePath = imagePath;
+        // this.imagePath = imagePath;
+        this.iconPath = iconPath;
     }
 
     public Long getId() {
@@ -39,5 +41,13 @@ public class UmaListResponse {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public String getIconPath() {
+        return iconPath;
+    }
+
+    public void setIconPath(String iconPath) {
+        this.iconPath = iconPath;
     }
 }
