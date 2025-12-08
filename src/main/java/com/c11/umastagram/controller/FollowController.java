@@ -43,11 +43,21 @@ public class FollowController {
     }
 
     @GetMapping("/acceptFriendRequest/{userId}/{friendId}")
-    public Follow acceptFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
-        LocalDateTime now = LocalDateTime.now();
-        Follow follow = new Follow(userId, friendId, now);
+    public ResponseEntity<String> acceptFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
+//        LocalDateTime now = LocalDateTime.now();
+//        Follow follow = new Follow(userId, friendId, now);
+//
+//        friendRequestService.deleteFriendRequest(userId, friendId);
+//        return followService.saveFollow(follow);
 
-        friendRequestService.deleteFriendRequest(userId, friendId);
-        return followService.saveFollow(follow);
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            Follow follow = new Follow(userId, friendId, now);
+            followService.saveFollow(follow);
+            return ResponseEntity.ok("Friend request sent successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
 }
