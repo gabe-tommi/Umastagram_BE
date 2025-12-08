@@ -29,6 +29,11 @@ public class FollowController {
         return followService.getUserFollowers(userId);
     }
 
+    @GetMapping("/getUserFriendRequests/{userId}")
+    public List<String> getUserFriendRequests(@PathVariable Long userId) {
+        return friendRequestService.getUserFriendRequests(userId);
+    }
+
     @PostMapping("/sendFriendRequest/{userId}/{friendId}")
     public ResponseEntity<String> sendFriendRequest(@PathVariable Long userId, @PathVariable Long friendId) {
         try {
