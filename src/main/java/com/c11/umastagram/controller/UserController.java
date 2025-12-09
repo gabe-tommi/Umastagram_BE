@@ -134,6 +134,30 @@ public class UserController {
         }
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteUser(@RequestBody Map<String, String> request) {
+        try {
+            String token = request.get("token");
+
+            if (token == null || token.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Token is required and cannot be empty"));
+            }
+
+            Long userId = jwtUtil.getUserIdFromToken(token);
+            Optional<User> userOpt = userService.findUserById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid token or user not found"));
+            }
+
+            User user = userOpt.get();
+            String resultMessage = userService.deleteUser(user);
+
+            return ResponseEntity.ok(Map.of("message", resultMessage));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred while deleting user"));
+        }
+    }
+
     @GetMapping("/userSearch/{query}")
     public List<String> userSearch(@PathVariable String query) {
         // Hey ! This function was written by Gabe Gallagher for his really cool search functionality
