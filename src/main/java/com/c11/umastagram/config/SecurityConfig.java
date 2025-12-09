@@ -28,6 +28,8 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login**", "/error", "/webjars/**").permitAll()
                 .requestMatchers("/api/**").permitAll()  // Allow all API endpoints without auth (for now)
                 .requestMatchers("/auth/**").permitAll()  // Allow auth endpoints
+                .requestMatchers("/user/getUserByUsername/{username}").permitAll()  // Allow fetching user by username
+                .requestMatchers("/user/userSearch/{query}").permitAll() // Allow user search
                 .requestMatchers("/user/signup", "/user/login", "/user/username/change").permitAll()  // Allow user signup and login
                 .anyRequest().authenticated()
             )
