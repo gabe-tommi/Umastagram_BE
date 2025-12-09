@@ -15,10 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.c11.umastagram.dto.LoginRequest;
+
+import java.util.List;
 import java.util.Optional;
 import com.c11.umastagram.util.JwtUtil;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/user")
@@ -151,6 +155,51 @@ public class UserController {
             return ResponseEntity.ok(Map.of("message", resultMessage));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred while deleting user"));
+        }
+    }
+
+    @GetMapping("/userSearch/{query}")
+    public List<String> userSearch(@PathVariable String query) {
+        // Hey ! This function was written by Gabe Gallagher for his really cool search functionality
+        // Dec 3, 2025
+        //
+        try{
+            List<String> results = new java.util.ArrayList<>();
+            List<User> userResults = userService.findSimilarUsersByUsername(query);
+            if(userResults.isEmpty()){
+                return results;
+            }
+            for(int i = 0; i < userResults.size(); i++) {
+                results.add(userResults.get(i).getUsername());
+            }
+            return results;
+        }
+        catch(Exception e){
+            return new java.util.ArrayList<>();
+            // returns empty list in case of error
+        }
+    }
+
+    @GetMapping("/getUserByUsername/{username}")
+    public List<String> getUserByUsername(@PathVariable String username) {
+        // Gabe Gallagher - LDM Dec 4 2025
+        List<String> userInfo = new java.util.ArrayList<>();
+        try {
+            Optional<User> userOpt = userService.findUserByUsername(username);
+            if (userOpt.isEmpty()) {
+                userInfo.add("findUserByUsernameError");
+                return userInfo;
+            }
+            userInfo = List.of(
+                userOpt.get().getUserId().toString(),
+                userOpt.get().getUsername(),
+                userOpt.get().getGithubUsername() != null ? userOpt.get().getGithubUsername() : "This User Hasn't Linked A GitHub Account",
+                userOpt.get().getEmail() != null ? userOpt.get().getEmail() : "This User Hasn't Added An Email"
+            );
+            return userInfo;
+        } catch (Exception e) {
+            userInfo.add("findUserByUsernameError");
+            return userInfo;
         }
     }
 }

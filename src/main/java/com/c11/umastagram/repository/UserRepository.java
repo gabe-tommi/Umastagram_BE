@@ -225,4 +225,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT u FROM User u WHERE u.provider = :provider AND (u.googleId = :providerId OR u.githubId = :providerId)")
     Optional<User> findByProviderAndProviderId(@Param("provider") String provider, @Param("providerId") String providerId);
+
+    List<User> findUserByUsernameContaining(String username);
 }
